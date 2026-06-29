@@ -1,0 +1,636 @@
+// ZyraTech Hub — Prisma Schema
+// Complete database schema for the STEM Education Platform
+// Updated to match frontend API documentation exactly
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  super_admin
+  admin
+}
+
+enum AccountStatus {
+  active
+  pending_password
+  deactivated
+}
+
+enum KycStatus {
+  not_submitted
+  pending
+  verified
+  rejected
+}
+
+enum ApplicationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum CourseCategory {
+  basic
+  intermediate
+  advanced
+  internship
+  matured
+}
+
+enum CourseStatus {
+  active
+  draft
+  archived
+}
+
+enum JobStatus {
+  active
+  draft
+  closed
+}
+
+enum ContentStatus {
+  published
+  draft
+  archived
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  refunded
+}
+
+// ============================================
+// USERS & AUTH
+// ============================================
+
+model User {
+  id                 String        @id @default(cuid())
+  name               String
+  email              String        @unique
+  password           String
+  role               UserRole      @default(admin)
+  department         String?       // Display label e.g. "Blog Team", "Partnerships"
+  permissions        String[]      // e.g. ['blog_articles', 'gallery', 'training_courses']
+  avatar             String?
+  accountStatus      AccountStatus @default(pending_password)
+  kycStatus          KycStatus     @default(not_submitted)
+  mustChangePassword Boolean       @default(true)
+  lastLogin          DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  // Relations
+  sessions           Session[]
+  kyc                KYC?
+  activityLogs       ActivityLog[]
+
+  @@index([email])
+  @@index([role])
+  @@index([accountStatus])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  token        String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model KYC {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @unique
+  documentType String   // national_id | passport | drivers_license
+  documentUrl  String
+  status       String   @default("pending")
+  reviewNotes  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+}
+
+// ============================================
+// TRAINING COURSES
+// ============================================
+
+model TrainingCourse {
+  id              String         @id @default(cuid())
+  title           String
+  category        CourseCategory
+  duration        String         // e.g. "8 weeks"
+  level           String         // e.g. "Intermediate"
+  price           String         // e.g. "GHS 2,800"
+  description     String?
+  topics          String[]
+  instructor      String?
+  format          String?        // e.g. "Online + Onsite"
+  status          CourseStatus   @default(draft)
+  enrollmentCount Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  applications    TrainingApplication[]
+  payments        Payment[]
+
+  @@index([status])
+  @@index([category])
+}
+
+// ============================================
+// TRAINING APPLICATIONS
+// Student fills a form — NO account created
+// ============================================
+
+model TrainingApplication {
+  id                  String            @id @default(cuid())
+  course              TrainingCourse    @relation(fields: [courseId], references: [id])
+  courseId            String
+
+  // Student info (stored directly — no user account)
+  fullName            String
+  emailAddress        String
+  phoneNumber         String
+  country             String
+  currentLocation     String
+  educationLevel      String   // JHS / SHS | Diploma | Undergraduate | Graduate | Other
+  preferredCohort     String   // January to April | April to July | July to October
+  learningMode        String   // Online | Onsite | Hybrid
+  message             String?
+
+  // Advanced course fields (intermediate, advanced, internship, matured)
+  cvFileUrl           String?
+  motivationStatement String?
+  linkedinUrl         String?
+  websiteUrl          String?
+
+  // Admin review workflow
+  status              ApplicationStatus @default(pending)
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  reviewNotes         String?
+
+  // Email/SMS notification tracking
+  notificationSent    Boolean           @default(false)
+  notifiedAt          DateTime?
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([courseId])
+  @@index([status])
+  @@index([emailAddress])
+  @@index([createdAt])
+}
+
+// ============================================
+// PAYMENTS / TRANSACTIONS
+// ============================================
+
+model Payment {
+  id               String         @id @default(cuid())
+  course           TrainingCourse @relation(fields: [courseId], references: [id])
+  courseId         String
+  applicationId    String?        // Reference to TrainingApplication
+
+  studentName      String
+  studentEmail     String
+  amount           Float
+  currency         String         @default("GHS")
+  reference        String         @unique
+  paymentMethod    String?        // mobile_money | card | bank
+  status           PaymentStatus  @default(pending)
+  paystackResponse String?        // Raw Paystack response JSON
+  refundReason     String?
+  refundMethod     String?
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  paidAt           DateTime?
+  refundedAt       DateTime?
+
+  @@index([courseId])
+  @@index([status])
+  @@index([reference])
+  @@index([studentEmail])
+}
+
+// ============================================
+// JOB LISTINGS
+// ============================================
+
+model JobListing {
+  id               String         @id @default(cuid())
+  title            String
+  department       String?
+  location         String?
+  type             String?        // full-time | part-time | contract | internship
+  level            String?        // entry | mid | senior
+  description      String?
+  requirements     String[]
+  responsibilities String[]
+  benefits         String[]
+  salary           String?
+  status           JobStatus      @default(draft)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  // Relations
+  applications     JobApplication[]
+
+  @@index([status])
+}
+
+// ============================================
+// JOB APPLICATIONS
+// ============================================
+
+model JobApplication {
+  id                    String            @id @default(cuid())
+  job                   JobListing        @relation(fields: [jobId], references: [id])
+  jobId                 String
+
+  // Step 1: Personal Info
+  firstName             String
+  lastName              String
+  email                 String
+  city                  String            // remote | hybrid | onsite
+  phoneNumber           String
+
+  // Step 2: Profiles & Resume
+  linkedin              String?
+  facebook              String?
+  twitter               String?
+  website               String?
+  resumeUrl             String
+  message               String
+
+  // Step 3: Preliminary Questions
+  title                 String?
+  legalAuthorization    String            // yes | no
+  workExperience        Int               // months
+  residence             String
+  currentSalary         String
+  howDidYouKnowZyra     String
+
+  // Step 4: Final Details
+  additionalDocumentUrl String?
+  disability            String?
+  references            String?
+  howDidYouKnowJob      String?
+  backgroundCheck       String?           // yes | no
+  criminalCharges       String?           // yes | no
+  certifyTruth          Boolean           @default(false)
+  agreePrivacy          Boolean           @default(false)
+
+  // Admin review
+  status                ApplicationStatus @default(pending)
+  reviewedBy            String?
+  reviewedAt            DateTime?
+  reviewNotes           String?
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([jobId])
+  @@index([status])
+  @@index([email])
+}
+
+// ============================================
+// PARTNERSHIP APPLICATIONS
+// ============================================
+
+model PartnershipApplication {
+  id               String            @id @default(cuid())
+
+  // Step 1: Organization Info
+  organizationName String
+  organizationType String            // corporate | ngo | educational | government | startup | other
+  website          String?
+  country          String
+
+  // Step 2: Contact Details
+  contactName      String
+  position         String
+  email            String
+  phone            String
+
+  // Step 3: Partnership Goals
+  partnershipType  String
+  interests        String[]
+  timeline         String?           // immediate | short | medium | long | flexible
+  message          String?
+
+  // Step 4: Agreement
+  agreedToTerms    Boolean           @default(false)
+
+  // Admin review
+  status           ApplicationStatus @default(pending)
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  reviewNotes      String?
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// ============================================
+// CONTACT INQUIRIES
+// ============================================
+
+model ContactInquiry {
+  id          String   @id @default(cuid())
+  fullName    String
+  email       String
+  phone       String?
+  inquiryType String?  // partnership | collaboration | general | support | media
+  message     String
+  status      String   @default("new") // new | read | replied
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================
+// MESSAGES (Admin inbox)
+// ============================================
+
+model Message {
+  id        String   @id @default(cuid())
+  sender    String
+  email     String
+  subject   String?
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ============================================
+// NEWSLETTER
+// ============================================
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  status    String   @default("subscribed") // subscribed | unsubscribed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+// ============================================
+// GALLERY
+// ============================================
+
+model GalleryAlbum {
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  coverImageUrl String?
+  status        ContentStatus @default(draft)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  media         GalleryMedia[]
+
+  @@index([status])
+}
+
+model GalleryMedia {
+  id        String       @id @default(cuid())
+  album     GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId   String
+  title     String?
+  url       String
+  type      String       @default("image") // image | video
+  order     Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([albumId])
+}
+
+// ============================================
+// BLOG ARTICLES
+// ============================================
+
+model BlogArticle {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  content       String
+  excerpt       String?
+  coverImageUrl String?
+  author        String?
+  tags          String[]
+  status        ContentStatus @default(draft)
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status])
+  @@index([slug])
+}
+
+// ============================================
+// PROJECTS
+// ============================================
+
+model Project {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  description   String?
+  coverImageUrl String?
+  technologies  String[]
+  clientName    String?
+  status        ContentStatus @default(draft)
+  completedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status])
+}
+
+// ============================================
+// FAQ
+// ============================================
+
+model FAQ {
+  id        String        @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  order     Int           @default(0)
+  status    ContentStatus @default(draft)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status])
+}
+
+// ============================================
+// TESTIMONIALS
+// ============================================
+
+model Testimonial {
+  id           String        @id @default(cuid())
+  name         String
+  role         String?
+  organization String?
+  content      String
+  avatarUrl    String?
+  rating       Int?
+  isFeatured   Boolean       @default(false)
+  status       ContentStatus @default(draft)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([status])
+  @@index([isFeatured])
+}
+
+// ============================================
+// IMPACT
+// ============================================
+
+model ImpactMetric {
+  id          String   @id @default(cuid())
+  label       String
+  value       String
+  suffix      String?
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ImpactStory {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  personName  String?
+  personRole  String?
+  imageUrl    String?
+  status      ContentStatus @default(draft)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status])
+}
+
+// ============================================
+// CMS — LIST CONTENT
+// Handles: hero_slides, services, benefits
+// ============================================
+
+model ContentItem {
+  id          String   @id @default(cuid())
+  section     String   // hero_slides | services | benefits
+  title       String?
+  subtitle    String?
+  description String?
+  imageUrl    String?
+  ctaText     String?
+  ctaLink     String?
+  content     String?  // JSON blob for extra section-specific fields
+  order       Int      @default(0)
+  status      String   @default("published")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([section])
+  @@index([section, status])
+}
+
+// ============================================
+// CMS — PAGE CONTENT
+// Handles: about_section, about_page, work_with_us,
+//          quality_assurance, partnership_content
+// ============================================
+
+model ContentPage {
+  id        String   @id @default(cuid())
+  section   String   @unique // the page/section key
+  content   String   // JSON blob with all page content
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// SETTINGS (Dynamic Configuration)
+// All keys/values from Super Admin settings page
+// ============================================
+
+model Setting {
+  id        String   @id @default(cuid())
+  category  String   // payment | email | sms | analytics | contact | social | features | metadata | security | business
+  key       String
+  value     String   // JSON string
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([category, key])
+  @@index([category])
+}
+
+// ============================================
+// AUDIT & LOGGING
+// ============================================
+
+model ActivityLog {
+  id           String   @id @default(cuid())
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId       String?
+  action       String   // LOGIN | CREATE_COURSE | APPROVE_ENROLLMENT | etc.
+  entity       String   // User | TrainingCourse | TrainingApplication | etc.
+  entityId     String?
+  changes      String?  // JSON of what changed
+  ipAddress    String?
+  userAgent    String?
+  status       String   @default("success")
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
