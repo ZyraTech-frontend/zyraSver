@@ -12,10 +12,24 @@ import {
 } from './types';
 
 export class PaymentsService {
-  private static get paystackSecretKey(): string {
-    const key = process.env.PAYSTACK_SECRET_KEY;
-    if (!key) throw new Error('PAYSTACK_SECRET_KEY is not defined in environment');
-    return key;
+  private static async getPaystackSecretKey(): Promise<string> {
+    const setting = await prisma.setting.findUnique({
+      where: {
+        category_key: {
+          category: 'payments',
+          key: 'paystack_secret_key'
+        }
+      }
+    });
+    
+    // Remove quotes if the value was JSON stringified
+    const key = setting?.value?.replace(/^"|"$/g, '');
+    
+    // Fallback to .env if not found in DB (for smooth transition)
+    const finalKey = key || process.env.PAYSTACK_SECRET_KEY;
+    if (!finalKey) throw new Error('Paystack secret key is not configured in the database or environment');
+    
+    return finalKey;
   }
 
   // ─── Format Payment Response ──────────────────────────────────
@@ -88,7 +102,7 @@ export class PaymentsService {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.paystackSecretKey}`,
+            Authorization: `Bearer ${await this.getPaystackSecretKey()}`,
             'Content-Type': 'application/json',
           },
         }
@@ -131,7 +145,7 @@ export class PaymentsService {
       const response = await axios.get(
         `https://api.paystack.co/transaction/verify/${reference}`,
         {
-          headers: { Authorization: `Bearer ${this.paystackSecretKey}` },
+          headers: { Authorization: `Bearer ${await this.getPaystackSecretKey()}` },
         }
       );
 
@@ -175,7 +189,7 @@ export class PaymentsService {
     rawBody: string
   ): Promise<void> {
     const hash = crypto
-      .createHmac('sha512', this.paystackSecretKey)
+      .createHmac('sha512', await this.getPaystackSecretKey())
       .update(rawBody)
       .digest('hex');
 
@@ -265,7 +279,7 @@ export class PaymentsService {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.paystackSecretKey}`,
+            Authorization: `Bearer ${await this.getPaystackSecretKey()}`,
             'Content-Type': 'application/json',
           },
         }

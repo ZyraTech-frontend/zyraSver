@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponseHandler } from '../../shared/utils/response';
+import { s3Service } from '../../shared/services/s3.service';
 import { JobsService } from './service';
 import { JobError } from './types';
 
@@ -118,13 +119,17 @@ export class JobsController {
       let additionalDocumentUrl = '';
 
       if (files?.resumeFile?.[0]) {
-        resumeUrl = `uploads/resumes/${req.body.jobId}/${Date.now()}_${files.resumeFile[0].originalname}`;
+        const file = files.resumeFile[0];
+        const fileName = `${req.body.jobId}-resume-${file.originalname}`;
+        resumeUrl = await s3Service.uploadDocument(fileName, file.buffer, file.mimetype);
       } else {
         errors.resumeFile = 'Resume file is required';
       }
 
       if (files?.additionalDocumentFile?.[0]) {
-        additionalDocumentUrl = `uploads/docs/${req.body.jobId}/${Date.now()}_${files.additionalDocumentFile[0].originalname}`;
+        const file = files.additionalDocumentFile[0];
+        const fileName = `${req.body.jobId}-docs-${file.originalname}`;
+        additionalDocumentUrl = await s3Service.uploadDocument(fileName, file.buffer, file.mimetype);
       }
 
       if (Object.keys(errors).length > 0) {

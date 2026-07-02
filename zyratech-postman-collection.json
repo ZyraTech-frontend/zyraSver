@@ -1,0 +1,4101 @@
+{
+  "info": {
+    "name": "ZyraTech Hub Professional API - COMPLETE",
+    "description": "The Exhaustive API documentation containing every single endpoint built for ZyraTech Hub. Includes all CRUD operations, Admin routes, and Public routes. Covers 19 modules with 100+ endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api",
+      "type": "string",
+      "description": "The base URL for the API."
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Admin Token (Set this after logging in)"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & Profile",
+      "description": "Login, 2FA, profile management, session management, password flows, and KYC submission.",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates an admin. Returns token + user, OR returns requires2FA + tempToken if 2FA is enabled.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Zyratech247\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify 2FA Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "verify"
+              ]
+            },
+            "description": "Complete login when 2FA is enabled. Send the tempToken from login + the 6-digit code from Google Authenticator.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tempToken\": \"TEMP_TOKEN_FROM_LOGIN\",\n  \"token\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Get a new access token using a refresh token.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"YOUR_REFRESH_TOKEN\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Request a password reset email.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Reset password using the token from the email link.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"RESET_TOKEN_FROM_EMAIL\",\n  \"newPassword\": \"NewSecure!Pass123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get the currently authenticated user's full profile."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Invalidate the current session and log out."
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            },
+            "description": "Change password while logged in. Requires current password.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"OldPassword123\",\n  \"newPassword\": \"NewSecure!Pass456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Submit KYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/submit-kyc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "submit-kyc"
+              ]
+            },
+            "description": "Submit KYC verification documents. Uses multipart/form-data with 'documents' file field and 'documentType' text field. Set Content-Type to multipart/form-data in Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentType\": \"national_id\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "Update profile details (firstName, lastName, phone, location, department, bio). Email is LOCKED and cannot be changed here.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+233201234567\",\n  \"location\": \"Accra, Ghana\",\n  \"department\": \"Engineering\",\n  \"bio\": \"Full Stack Engineer at ZyraTech Hub\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Notification Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/profile/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "profile",
+                "notifications"
+              ]
+            },
+            "description": "Save notification toggle states as a JSON object.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationPreferences\": {\n    \"activityAlerts\": true,\n    \"systemAlerts\": true,\n    \"emailDelivery\": true,\n    \"pushDelivery\": false\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Generate 2FA Secret & QR",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "generate"
+              ]
+            },
+            "description": "Generate a new TOTP secret and QR code data URL. The user scans this QR with Google Authenticator."
+          }
+        },
+        {
+          "name": "Enable 2FA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/enable",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "enable"
+              ]
+            },
+            "description": "Verify the 6-digit code from Google Authenticator to activate 2FA on the account.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Disable 2FA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/2fa/disable",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "2fa",
+                "disable"
+              ]
+            },
+            "description": "Turn off Two-Factor Authentication."
+          }
+        },
+        {
+          "name": "Get Active Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "sessions"
+              ]
+            },
+            "description": "List all active login sessions for the current user (device, IP, last activity)."
+          }
+        },
+        {
+          "name": "Revoke All Other Sessions",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "sessions"
+              ]
+            },
+            "description": "Sign out of every device except the current one."
+          }
+        },
+        {
+          "name": "Revoke Specific Session",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/sessions/SESSION_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "sessions",
+                "SESSION_ID_HERE"
+              ]
+            },
+            "description": "Revoke (log out) a specific session by its ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Management (Super Admin)",
+      "description": "Manage admin users. All endpoints require super_admin role.",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users?page=1&limit=10"
+              ]
+            },
+            "description": "List all admin users with pagination."
+          }
+        },
+        {
+          "name": "Get Single User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/USER_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "USER_ID_HERE"
+              ]
+            },
+            "description": "Get a specific admin user by ID."
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            },
+            "description": "Create a new admin user. They receive an email with temporary credentials.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"TempPass!123\",\n  \"department\": \"Blog Team\",\n  \"permissions\": [\n    \"blog_articles\",\n    \"gallery\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/USER_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "USER_ID_HERE"
+              ]
+            },
+            "description": "Update an admin user's details.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"department\": \"IT\",\n  \"email\": \"admin@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Permissions",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/USER_ID_HERE/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "USER_ID_HERE",
+                "permissions"
+              ]
+            },
+            "description": "Update an admin's module permissions.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\n    \"blog_articles\",\n    \"gallery\",\n    \"training_courses\",\n    \"content\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Activate User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/USER_ID_HERE/activate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "USER_ID_HERE",
+                "activate"
+              ]
+            },
+            "description": "Reactivate a deactivated admin account."
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/USER_ID_HERE/deactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "USER_ID_HERE",
+                "deactivate"
+              ]
+            },
+            "description": "Deactivate an admin account (soft delete)."
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/USER_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "USER_ID_HERE"
+              ]
+            },
+            "description": "Permanently delete an admin user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Training Courses",
+      "description": "Public course listings and admin CRUD for training courses.",
+      "item": [
+        {
+          "name": "List Public Courses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/training-courses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "training-courses"
+              ]
+            },
+            "description": "List all published training courses for the public website."
+          }
+        },
+        {
+          "name": "Get Single Course",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/training-courses/COURSE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "training-courses",
+                "COURSE_ID_HERE"
+              ]
+            },
+            "description": "Get full details of a specific training course by ID."
+          }
+        },
+        {
+          "name": "List Courses (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/training-courses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "training-courses"
+              ]
+            },
+            "description": "List all courses including drafts and archived."
+          }
+        },
+        {
+          "name": "Create Course (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/training-courses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "training-courses"
+              ]
+            },
+            "description": "Create a new training course.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Robotics\",\n  \"slug\": \"advanced-robotics\",\n  \"description\": \"Learn robotics fundamentals and build your own robot.\",\n  \"duration\": \"12 weeks\",\n  \"format\": \"Hybrid\",\n  \"price\": 3500,\n  \"category\": \"advanced\",\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Course (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/training-courses/COURSE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "training-courses",
+                "COURSE_ID_HERE"
+              ]
+            },
+            "description": "Update a training course.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Robotics (Updated)\",\n  \"price\": 4000,\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Course (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/training-courses/COURSE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "training-courses",
+                "COURSE_ID_HERE"
+              ]
+            },
+            "description": "Delete a training course."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Training Applications & Enrollments",
+      "description": "Public application form and admin enrollment management.",
+      "item": [
+        {
+          "name": "Submit Training Application (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/training/applications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "training",
+                "applications"
+              ]
+            },
+            "description": "Public form for students to apply for a training course. Supports optional CV file upload via multipart/form-data.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"COURSE_ID_HERE\",\n  \"applicantName\": \"Jane Student\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"0201234567\",\n  \"experienceLevel\": \"Beginner\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Enrollments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/enrollments?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "enrollments?page=1&limit=10"
+              ]
+            },
+            "description": "List all training applications with pagination. Filter by status: pending, approved, rejected."
+          }
+        },
+        {
+          "name": "Get Single Enrollment (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/enrollments/ENROLLMENT_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "enrollments",
+                "ENROLLMENT_ID_HERE"
+              ]
+            },
+            "description": "Get full details of a specific enrollment."
+          }
+        },
+        {
+          "name": "Update Enrollment Status (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/enrollments/ENROLLMENT_ID_HERE/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "enrollments",
+                "ENROLLMENT_ID_HERE",
+                "status"
+              ]
+            },
+            "description": "Approve or reject a training application.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Jobs & Job Applications",
+      "description": "Public job listings, public application submission, and admin management.",
+      "item": [
+        {
+          "name": "List Public Jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "jobs"
+              ]
+            },
+            "description": "List active job openings for the careers page."
+          }
+        },
+        {
+          "name": "Get Single Job",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs/JOB_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "jobs",
+                "JOB_ID_HERE"
+              ]
+            },
+            "description": "Get full details of a specific job listing."
+          }
+        },
+        {
+          "name": "Submit Job Application (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs/applications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "jobs",
+                "applications"
+              ]
+            },
+            "description": "Submit a job application. Uses multipart/form-data with 'resumeFile' and optional 'additionalDocumentFile' fields.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"JOB_ID_HERE\",\n  \"applicantName\": \"Bob Worker\",\n  \"email\": \"bob@example.com\",\n  \"phone\": \"0209998888\",\n  \"coverLetter\": \"I would love to work here.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Jobs (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "jobs"
+              ]
+            },
+            "description": "List all job listings including drafts and closed."
+          }
+        },
+        {
+          "name": "Create Job (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "jobs"
+              ]
+            },
+            "description": "Create a new job listing.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Software Engineer\",\n  \"department\": \"Engineering\",\n  \"location\": \"Accra, Ghana\",\n  \"type\": \"Full-time\",\n  \"description\": \"Build awesome things.\",\n  \"requirements\": \"NodeJS, React, TypeScript\",\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Job (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/jobs/JOB_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "jobs",
+                "JOB_ID_HERE"
+              ]
+            },
+            "description": "Update a job listing.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\",\n  \"title\": \"Senior Software Engineer\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Job (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/jobs/JOB_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "jobs",
+                "JOB_ID_HERE"
+              ]
+            },
+            "description": "Delete a job listing."
+          }
+        },
+        {
+          "name": "List Job Applications (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/job-applications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "job-applications"
+              ]
+            },
+            "description": "List all job applications submitted by candidates."
+          }
+        },
+        {
+          "name": "Get Single Job Application (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/job-applications/APPLICATION_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "job-applications",
+                "APPLICATION_ID_HERE"
+              ]
+            },
+            "description": "Get full details of a specific job application."
+          }
+        },
+        {
+          "name": "Update Application Status (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/job-applications/APPLICATION_ID_HERE/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "job-applications",
+                "APPLICATION_ID_HERE",
+                "status"
+              ]
+            },
+            "description": "Update the status of a job application (reviewed, shortlisted, rejected, etc).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"reviewed\",\n  \"notes\": \"Strong candidate. Schedule interview.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Payments & Transactions",
+      "description": "Payment initialization, verification, webhooks, and admin transaction management.",
+      "item": [
+        {
+          "name": "Initialize Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/initialize",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "initialize"
+              ]
+            },
+            "description": "Initialize a Paystack payment transaction for an approved course application.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"amount\": 3500,\n  \"referenceId\": \"ENROLLMENT_ID_HERE\",\n  \"referenceType\": \"training_application\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/verify?reference=PAY_REF_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "verify?reference=PAY_REF_HERE"
+              ]
+            },
+            "description": "Verify a Paystack payment after redirect."
+          }
+        },
+        {
+          "name": "Paystack Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/webhook",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "webhook"
+              ]
+            },
+            "description": "Webhook endpoint called by Paystack servers. DO NOT test manually — Paystack sends this automatically."
+          }
+        },
+        {
+          "name": "List Transactions (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/transactions?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "transactions?page=1&limit=10"
+              ]
+            },
+            "description": "View all payment transactions with pagination."
+          }
+        },
+        {
+          "name": "Refund Payment (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/transactions/PAY_REFERENCE/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "transactions",
+                "PAY_REFERENCE",
+                "refund"
+              ]
+            },
+            "description": "Initiate a refund for a specific transaction."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Settings",
+      "description": "Public site settings and admin settings management. Settings are stored in the database by category (branding, contact, social, email, payments, general).",
+      "item": [
+        {
+          "name": "Get Public Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/public",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "settings",
+                "public"
+              ]
+            },
+            "description": "Get all public site settings (branding, contact info, social links, etc)."
+          }
+        },
+        {
+          "name": "List All Settings (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "settings"
+              ]
+            },
+            "description": "Get all settings including private ones (SMTP, API keys, etc)."
+          }
+        },
+        {
+          "name": "Update Setting (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "settings"
+              ]
+            },
+            "description": "Update a single setting by key.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"site_name\",\n  \"value\": \"ZyraTech Hub\",\n  \"category\": \"branding\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Bulk Update Settings (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/settings/bulk",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "settings",
+                "bulk"
+              ]
+            },
+            "description": "Update multiple settings at once.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"settings\": [\n    {\n      \"key\": \"site_name\",\n      \"value\": \"ZyraTech Hub\",\n      \"category\": \"branding\"\n    },\n    {\n      \"key\": \"primary_color\",\n      \"value\": \"#6366f1\",\n      \"category\": \"branding\"\n    },\n    {\n      \"key\": \"contact_email\",\n      \"value\": \"info@zyratechhub.com\",\n      \"category\": \"contact\"\n    }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. CMS Content",
+      "description": "Content Management System for dynamic page sections (hero slides, features, etc) and custom pages (About, Terms, etc).",
+      "item": [
+        {
+          "name": "Get Content Items by Section (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/content/items/hero_slides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "content",
+                "items",
+                "hero_slides"
+              ]
+            },
+            "description": "Get published content items for a given section slug (e.g. hero_slides, features, services)."
+          }
+        },
+        {
+          "name": "Get Page by Section (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/content/pages/about",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "content",
+                "pages",
+                "about"
+              ]
+            },
+            "description": "Get a published CMS page by section slug."
+          }
+        },
+        {
+          "name": "List Items by Section (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/items/section/hero_slides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "items",
+                "section",
+                "hero_slides"
+              ]
+            },
+            "description": "List all content items for a section including drafts."
+          }
+        },
+        {
+          "name": "Get Single Item (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/items/ITEM_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "items",
+                "ITEM_ID_HERE"
+              ]
+            },
+            "description": "Get a specific content item by ID."
+          }
+        },
+        {
+          "name": "Create Content Item (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "items"
+              ]
+            },
+            "description": "Create a new content item (hero slide, feature block, etc).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Welcome to ZyraTech\",\n  \"section\": \"hero_slides\",\n  \"content\": \"Empowering STEM Education in Ghana\",\n  \"status\": \"published\",\n  \"order\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Content Item (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/items/ITEM_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "items",
+                "ITEM_ID_HERE"
+              ]
+            },
+            "description": "Update a content item.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Welcome to ZyraTech (Updated)\",\n  \"content\": \"Leading STEM Innovation\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reorder Items (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/items/reorder/hero_slides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "items",
+                "reorder",
+                "hero_slides"
+              ]
+            },
+            "description": "Reorder content items within a section.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderedIds\": [\n    \"id1\",\n    \"id2\",\n    \"id3\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Content Item (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/items/ITEM_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "items",
+                "ITEM_ID_HERE"
+              ]
+            },
+            "description": "Delete a content item."
+          }
+        },
+        {
+          "name": "Get Page (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/pages/about",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "pages",
+                "about"
+              ]
+            },
+            "description": "Get a CMS page by section slug (admin view includes drafts)."
+          }
+        },
+        {
+          "name": "Upsert Page (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/content/pages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "content",
+                "pages"
+              ]
+            },
+            "description": "Create or update a CMS page.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"section\": \"about\",\n  \"title\": \"About ZyraTech Hub\",\n  \"content\": \"<p>We are a STEM education platform...</p>\",\n  \"status\": \"published\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Blog Articles",
+      "description": "Public blog and admin article management with image upload support.",
+      "item": [
+        {
+          "name": "List Public Articles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/blog/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "blog",
+                "articles"
+              ]
+            },
+            "description": "List published blog articles for the public website."
+          }
+        },
+        {
+          "name": "Get Article by Slug",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/blog/articles/learning-robotics-in-2026",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "blog",
+                "articles",
+                "learning-robotics-in-2026"
+              ]
+            },
+            "description": "Get a single published blog article by its slug."
+          }
+        },
+        {
+          "name": "Upload Blog Image (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/blog/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "upload"
+              ]
+            },
+            "description": "Upload an image for use in blog articles. Uses multipart/form-data with 'file' field."
+          }
+        },
+        {
+          "name": "List Articles (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/blog/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "articles"
+              ]
+            },
+            "description": "List all blog articles including drafts."
+          }
+        },
+        {
+          "name": "Get Single Article (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/blog/articles/ARTICLE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "articles",
+                "ARTICLE_ID_HERE"
+              ]
+            },
+            "description": "Get a specific article by ID."
+          }
+        },
+        {
+          "name": "Create Article (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/blog/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "articles"
+              ]
+            },
+            "description": "Create a new blog article.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learning Robotics in 2026\",\n  \"slug\": \"learning-robotics-in-2026\",\n  \"content\": \"<p>Robotics is revolutionizing STEM education...</p>\",\n  \"excerpt\": \"A comprehensive guide to getting started with robotics.\",\n  \"author\": \"Admin\",\n  \"category\": \"Technology\",\n  \"tags\": [\n    \"robotics\",\n    \"STEM\",\n    \"education\"\n  ],\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Article (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/blog/articles/ARTICLE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "articles",
+                "ARTICLE_ID_HERE"
+              ]
+            },
+            "description": "Update a blog article.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learning Robotics 101 (Updated)\",\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Article (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/blog/articles/ARTICLE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "articles",
+                "ARTICLE_ID_HERE"
+              ]
+            },
+            "description": "Delete a blog article."
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Projects Portfolio",
+      "description": "Showcase completed student and company projects.",
+      "item": [
+        {
+          "name": "List Public Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "description": "List published projects for the portfolio page."
+          }
+        },
+        {
+          "name": "Get Project by Slug",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/mars-rover-replica",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "mars-rover-replica"
+              ]
+            },
+            "description": "Get a specific project by its slug."
+          }
+        },
+        {
+          "name": "Upload Project Image (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/projects/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "projects",
+                "upload"
+              ]
+            },
+            "description": "Upload an image for a project. Uses multipart/form-data with 'file' field."
+          }
+        },
+        {
+          "name": "List Projects (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "projects"
+              ]
+            },
+            "description": "List all projects including drafts."
+          }
+        },
+        {
+          "name": "Get Single Project (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/projects/PROJECT_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "projects",
+                "PROJECT_ID_HERE"
+              ]
+            },
+            "description": "Get a specific project by ID."
+          }
+        },
+        {
+          "name": "Create Project (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "projects"
+              ]
+            },
+            "description": "Add a new project to the portfolio.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mars Rover Replica\",\n  \"slug\": \"mars-rover-replica\",\n  \"description\": \"Built by our advanced robotics students.\",\n  \"category\": \"Robotics\",\n  \"url\": \"https://github.com/zyratech/mars-rover\",\n  \"completionDate\": \"2026-05-01T00:00:00.000Z\",\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Project (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/projects/PROJECT_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "projects",
+                "PROJECT_ID_HERE"
+              ]
+            },
+            "description": "Update a project.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mars Rover Replica V2\",\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Project (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/projects/PROJECT_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "projects",
+                "PROJECT_ID_HERE"
+              ]
+            },
+            "description": "Delete a project."
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Gallery",
+      "description": "Photo gallery with albums and media items. Supports image upload, reordering, and full media CRUD.",
+      "item": [
+        {
+          "name": "List Public Albums",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/gallery/albums",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gallery",
+                "albums"
+              ]
+            },
+            "description": "List all published gallery albums with their media."
+          }
+        },
+        {
+          "name": "Get Single Album",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/gallery/albums/ALBUM_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gallery",
+                "albums",
+                "ALBUM_ID_HERE"
+              ]
+            },
+            "description": "Get a specific album and all its media items."
+          }
+        },
+        {
+          "name": "Upload Gallery Image (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "upload"
+              ]
+            },
+            "description": "Upload an image for gallery use. Uses multipart/form-data with 'file' field."
+          }
+        },
+        {
+          "name": "List Albums (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/albums",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "albums"
+              ]
+            },
+            "description": "List all albums including unpublished."
+          }
+        },
+        {
+          "name": "Get Single Album (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/albums/ALBUM_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "albums",
+                "ALBUM_ID_HERE"
+              ]
+            },
+            "description": "Get a specific album by ID."
+          }
+        },
+        {
+          "name": "Create Album (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/albums",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "albums"
+              ]
+            },
+            "description": "Create a new gallery album.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"2026 Hackathon\",\n  \"description\": \"Photos from the annual hackathon event\",\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Album (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/albums/ALBUM_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "albums",
+                "ALBUM_ID_HERE"
+              ]
+            },
+            "description": "Update an album.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"2026 Hackathon (Official Photos)\",\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Album (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/albums/ALBUM_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "albums",
+                "ALBUM_ID_HERE"
+              ]
+            },
+            "description": "Delete an album and all its media."
+          }
+        },
+        {
+          "name": "Add Media to Album (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/media",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "media"
+              ]
+            },
+            "description": "Add a media item (image/video) to an album.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"albumId\": \"ALBUM_ID_HERE\",\n  \"url\": \"https://example.com/photo.jpg\",\n  \"caption\": \"Team building exercise\",\n  \"type\": \"image\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reorder Media in Album (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/albums/ALBUM_ID_HERE/media/reorder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "albums",
+                "ALBUM_ID_HERE",
+                "media",
+                "reorder"
+              ]
+            },
+            "description": "Reorder media items within an album.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderedIds\": [\n    \"media_id_1\",\n    \"media_id_2\",\n    \"media_id_3\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Media (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/media/MEDIA_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "media",
+                "MEDIA_ID_HERE"
+              ]
+            },
+            "description": "Update a media item's caption or details.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caption\": \"Updated caption for this photo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Media (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/gallery/media/MEDIA_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "gallery",
+                "media",
+                "MEDIA_ID_HERE"
+              ]
+            },
+            "description": "Remove a media item from an album."
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. FAQ",
+      "description": "Frequently Asked Questions with ordering support.",
+      "item": [
+        {
+          "name": "List Public FAQs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/faq",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "faq"
+              ]
+            },
+            "description": "List all published FAQs ordered by display order."
+          }
+        },
+        {
+          "name": "List FAQs (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/faq",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "faq"
+              ]
+            },
+            "description": "List all FAQs including unpublished."
+          }
+        },
+        {
+          "name": "Get Single FAQ (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/faq/FAQ_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "faq",
+                "FAQ_ID_HERE"
+              ]
+            },
+            "description": "Get a specific FAQ by ID."
+          }
+        },
+        {
+          "name": "Create FAQ (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/faq",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "faq"
+              ]
+            },
+            "description": "Create a new FAQ.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"How do I apply for a course?\",\n  \"answer\": \"Visit the training page and click Apply on your chosen course.\",\n  \"category\": \"General\",\n  \"order\": 1,\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update FAQ (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/faq/FAQ_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "faq",
+                "FAQ_ID_HERE"
+              ]
+            },
+            "description": "Update a FAQ.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answer\": \"Click the Apply button on the course page and fill out the form.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reorder FAQs (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/faq/reorder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "faq",
+                "reorder"
+              ]
+            },
+            "description": "Reorder FAQs by providing ordered IDs.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderedIds\": [\n    \"faq_id_1\",\n    \"faq_id_2\",\n    \"faq_id_3\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete FAQ (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/faq/FAQ_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "faq",
+                "FAQ_ID_HERE"
+              ]
+            },
+            "description": "Delete a FAQ."
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Testimonials",
+      "description": "Student and partner testimonials with image upload support.",
+      "item": [
+        {
+          "name": "List Public Testimonials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/testimonials",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "testimonials"
+              ]
+            },
+            "description": "List all published testimonials."
+          }
+        },
+        {
+          "name": "Upload Testimonial Image (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/testimonials/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials",
+                "upload"
+              ]
+            },
+            "description": "Upload an avatar/photo for a testimonial. Uses multipart/form-data with 'file' field."
+          }
+        },
+        {
+          "name": "List Testimonials (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/testimonials",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials"
+              ]
+            },
+            "description": "List all testimonials including unpublished."
+          }
+        },
+        {
+          "name": "Get Single Testimonial (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/testimonials/TESTIMONIAL_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials",
+                "TESTIMONIAL_ID_HERE"
+              ]
+            },
+            "description": "Get a specific testimonial by ID."
+          }
+        },
+        {
+          "name": "Create Testimonial (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/testimonials",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials"
+              ]
+            },
+            "description": "Add a new testimonial.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sarah Johnson\",\n  \"role\": \"Robotics Student\",\n  \"content\": \"ZyraTech completely changed my career trajectory. The hands-on approach was incredible!\",\n  \"rating\": 5,\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Testimonial (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/testimonials/TESTIMONIAL_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials",
+                "TESTIMONIAL_ID_HERE"
+              ]
+            },
+            "description": "Update a testimonial.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"content\": \"Updated testimonial content.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Testimonial (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/testimonials/TESTIMONIAL_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials",
+                "TESTIMONIAL_ID_HERE"
+              ]
+            },
+            "description": "Delete a testimonial."
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. Newsletter",
+      "description": "Newsletter subscription management.",
+      "item": [
+        {
+          "name": "Subscribe to Newsletter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/newsletter/subscribe",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "newsletter",
+                "subscribe"
+              ]
+            },
+            "description": "Subscribe an email to the newsletter.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"subscriber@example.com\",\n  \"name\": \"Jane Subscriber\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe from Newsletter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/newsletter/unsubscribe",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "newsletter",
+                "unsubscribe"
+              ]
+            },
+            "description": "Unsubscribe an email from the newsletter.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"subscriber@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Subscribers (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/newsletter?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "newsletter?page=1&limit=10"
+              ]
+            },
+            "description": "List all newsletter subscribers with pagination."
+          }
+        },
+        {
+          "name": "Update Subscriber Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/newsletter/SUBSCRIBER_ID_HERE/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "newsletter",
+                "SUBSCRIBER_ID_HERE",
+                "status"
+              ]
+            },
+            "description": "Update a subscriber's status (active, unsubscribed, etc).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"unsubscribed\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "15. Partnerships",
+      "description": "Partnership application forms and admin management.",
+      "item": [
+        {
+          "name": "Submit Partnership Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/partnerships",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "partnerships"
+              ]
+            },
+            "description": "Submit a partnership application.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organization\": \"Tech Corp International\",\n  \"contactName\": \"Bob Manager\",\n  \"email\": \"bob@techcorp.com\",\n  \"phone\": \"0200000000\",\n  \"proposal\": \"We would like to partner on STEM education initiatives.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Partnership Applications (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/partnerships?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "partnerships?page=1&limit=10"
+              ]
+            },
+            "description": "List all partnership applications."
+          }
+        },
+        {
+          "name": "Get Single Application (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/partnerships/APPLICATION_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "partnerships",
+                "APPLICATION_ID_HERE"
+              ]
+            },
+            "description": "Get details of a specific partnership application."
+          }
+        },
+        {
+          "name": "Update Application Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/partnerships/APPLICATION_ID_HERE/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "partnerships",
+                "APPLICATION_ID_HERE",
+                "status"
+              ]
+            },
+            "description": "Approve or reject a partnership application.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Partnership Application (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/partnerships/APPLICATION_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "partnerships",
+                "APPLICATION_ID_HERE"
+              ]
+            },
+            "description": "Delete a partnership application."
+          }
+        }
+      ]
+    },
+    {
+      "name": "16. Contact Inquiries",
+      "description": "Public contact form and admin inquiry management.",
+      "item": [
+        {
+          "name": "Submit Contact Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/contact",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contact"
+              ]
+            },
+            "description": "Submit a contact form message.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Visitor\",\n  \"email\": \"jane@example.com\",\n  \"subject\": \"General Inquiry\",\n  \"message\": \"I have a question about your robotics courses.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Contact Inquiries (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/contact?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "contact?page=1&limit=10"
+              ]
+            },
+            "description": "List all contact form submissions."
+          }
+        },
+        {
+          "name": "Get Single Inquiry (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/contact/INQUIRY_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "contact",
+                "INQUIRY_ID_HERE"
+              ]
+            },
+            "description": "Get full details of a contact inquiry."
+          }
+        },
+        {
+          "name": "Update Inquiry Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/contact/INQUIRY_ID_HERE/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "contact",
+                "INQUIRY_ID_HERE",
+                "status"
+              ]
+            },
+            "description": "Update inquiry status (new, in_progress, resolved).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"resolved\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Inquiry (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/contact/INQUIRY_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "contact",
+                "INQUIRY_ID_HERE"
+              ]
+            },
+            "description": "Delete a contact inquiry."
+          }
+        }
+      ]
+    },
+    {
+      "name": "17. Messages",
+      "description": "General message inbox — public message submission and admin inbox management.",
+      "item": [
+        {
+          "name": "Submit Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "messages"
+              ]
+            },
+            "description": "Submit a general message to the platform.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Visitor\",\n  \"email\": \"john@example.com\",\n  \"subject\": \"Question\",\n  \"message\": \"What courses do you offer for beginners?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Messages (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/messages?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "messages?page=1&limit=10"
+              ]
+            },
+            "description": "List all messages in the admin inbox."
+          }
+        },
+        {
+          "name": "Get Single Message (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/messages/MESSAGE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "messages",
+                "MESSAGE_ID_HERE"
+              ]
+            },
+            "description": "Get a specific message. Automatically marks it as read."
+          }
+        },
+        {
+          "name": "Update Read Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/messages/MESSAGE_ID_HERE/read-status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "messages",
+                "MESSAGE_ID_HERE",
+                "read-status"
+              ]
+            },
+            "description": "Toggle a message's read/unread status.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isRead\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Message (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/messages/MESSAGE_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "messages",
+                "MESSAGE_ID_HERE"
+              ]
+            },
+            "description": "Delete a message."
+          }
+        }
+      ]
+    },
+    {
+      "name": "18. Impact (Metrics & Stories)",
+      "description": "Impact metrics (e.g. '500+ Students Trained') and impact stories for the public site.",
+      "item": [
+        {
+          "name": "Get Public Impact Data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/impact",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "impact"
+              ]
+            },
+            "description": "Get all published impact metrics and stories for the public website."
+          }
+        },
+        {
+          "name": "Upload Impact Image (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "upload"
+              ]
+            },
+            "description": "Upload an image for impact stories. Uses multipart/form-data with 'file' field."
+          }
+        },
+        {
+          "name": "List Metrics (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/metrics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "metrics"
+              ]
+            },
+            "description": "List all impact metrics."
+          }
+        },
+        {
+          "name": "Get Single Metric (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/metrics/METRIC_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "metrics",
+                "METRIC_ID_HERE"
+              ]
+            },
+            "description": "Get a specific impact metric."
+          }
+        },
+        {
+          "name": "Create Metric (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/metrics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "metrics"
+              ]
+            },
+            "description": "Create a new impact metric.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Students Trained\",\n  \"value\": \"500+\",\n  \"icon\": \"users\",\n  \"description\": \"Total students who completed our programs\",\n  \"order\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Metric (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/metrics/METRIC_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "metrics",
+                "METRIC_ID_HERE"
+              ]
+            },
+            "description": "Update an impact metric.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"750+\",\n  \"description\": \"Updated count as of Q2 2026\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reorder Metrics (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/metrics/reorder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "metrics",
+                "reorder"
+              ]
+            },
+            "description": "Reorder impact metrics.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderedIds\": [\n    \"metric_id_1\",\n    \"metric_id_2\",\n    \"metric_id_3\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Metric (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/metrics/METRIC_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "metrics",
+                "METRIC_ID_HERE"
+              ]
+            },
+            "description": "Delete an impact metric."
+          }
+        },
+        {
+          "name": "List Stories (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/stories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "stories"
+              ]
+            },
+            "description": "List all impact stories."
+          }
+        },
+        {
+          "name": "Get Single Story (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/stories/STORY_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "stories",
+                "STORY_ID_HERE"
+              ]
+            },
+            "description": "Get a specific impact story."
+          }
+        },
+        {
+          "name": "Create Story (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/stories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "stories"
+              ]
+            },
+            "description": "Create a new impact story.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"How Sarah Built Her First Robot\",\n  \"content\": \"<p>Sarah's journey from beginner to robotics engineer...</p>\",\n  \"author\": \"ZyraTech Team\",\n  \"status\": \"published\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Story (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/stories/STORY_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "stories",
+                "STORY_ID_HERE"
+              ]
+            },
+            "description": "Update an impact story.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"How Sarah Built Her First Robot (Updated)\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Story (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/impact/stories/STORY_ID_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "impact",
+                "stories",
+                "STORY_ID_HERE"
+              ]
+            },
+            "description": "Delete an impact story."
+          }
+        }
+      ]
+    },
+    {
+      "name": "19. Activity Logs (Super Admin)",
+      "description": "System activity logs showing who did what and when. Restricted to super admins.",
+      "item": [
+        {
+          "name": "Get Activity Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/logs?page=1&limit=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "logs?page=1&limit=50"
+              ]
+            },
+            "description": "View all system activity logs (login, create, update, delete actions)."
+          }
+        }
+      ]
+    }
+  ]
+}

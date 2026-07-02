@@ -79,16 +79,27 @@ enum PaymentStatus {
 
 model User {
   id                 String        @id @default(cuid())
-  name               String
+  name               String        // Full name (kept for compatibility)
+  firstName          String?
+  lastName           String?
   email              String        @unique
   password           String
   role               UserRole      @default(admin)
   department         String?       // Display label e.g. "Blog Team", "Partnerships"
+  phone              String?
+  location           String?
+  bio                String?
   permissions        String[]      // e.g. ['blog_articles', 'gallery', 'training_courses']
   avatar             String?
   accountStatus      AccountStatus @default(pending_password)
   kycStatus          KycStatus     @default(not_submitted)
   mustChangePassword Boolean       @default(true)
+  
+  // 2FA and Notifications
+  twoFactorEnabled        Boolean   @default(false)
+  twoFactorSecret         String?
+  notificationPreferences Json?     // Stores JSON for preferences like { activityAlerts: true, ... }
+
   lastLogin          DateTime?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -109,6 +120,8 @@ model Session {
   userId       String
   token        String
   refreshToken String   @unique
+  ipAddress    String?
+  userAgent    String?
   expiresAt    DateTime
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

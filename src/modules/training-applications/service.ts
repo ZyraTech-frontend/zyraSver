@@ -1,6 +1,7 @@
 // Training Applications Module - Business Logic Service
 
 import { prisma } from '../../shared/config/database';
+import { deepValidateEmail } from '../../shared/utils/emailValidator';
 import {
   TrainingApplicationInput,
   ApplicationResponse,
@@ -25,11 +26,11 @@ export class TrainingApplicationsService {
   }
 
   // ─── Validate Application Input ───────────────────────────────
-  static validateInput(
+  static async validateInput(
     body: any,
     isAdvanced: boolean,
     hasFile: boolean
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
     const errors: Record<string, string> = {};
 
     if (!body.courseId) errors.courseId = 'Course is required';
@@ -38,6 +39,12 @@ export class TrainingApplicationsService {
       errors.emailAddress = 'Email address is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.emailAddress)) {
       errors.emailAddress = 'Invalid email format';
+    } else {
+      // Deep email validation: check DNS MX records + block disposable emails
+      const emailError = await deepValidateEmail(body.emailAddress.trim());
+      if (emailError) {
+        errors.emailAddress = emailError;
+      }
     }
     if (!body.phoneNumber?.trim()) errors.phoneNumber = 'Phone number is required';
     if (!body.country?.trim()) errors.country = 'Country is required';

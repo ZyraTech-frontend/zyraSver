@@ -39,6 +39,7 @@
 import { Router } from 'express';
 
 // ─── Implemented Modules ──────────────────────────────────────
+import { checkMaintenanceMode } from '../shared/middleware/maintenance';
 import authRoutes from '../modules/auth/routes';
 import usersRoutes from '../modules/users/routes';
 import trainingCoursesRoutes from '../modules/training-courses/routes';
@@ -73,7 +74,7 @@ router.use('/admin/users', usersRoutes);
 // ─── PUBLIC TRAINING COURSES ──────────────────────────────────
 // GET /api/training-courses
 // GET /api/training-courses/:id
-router.use('/training-courses', trainingCoursesRoutes);
+router.use('/training-courses', checkMaintenanceMode, trainingCoursesRoutes);
 
 // ─── ADMIN TRAINING COURSES ───────────────────────────────────
 // GET    /api/admin/training-courses       (training_courses permission)
@@ -111,7 +112,7 @@ router.delete(
 
 // ─── TRAINING APPLICATIONS (Public Student Form) ──────────────
 // POST /api/training/applications
-router.use('/training/applications', trainingApplicationsRoutes);
+router.use('/training/applications', checkMaintenanceMode, trainingApplicationsRoutes);
 
 // ─── ADMIN ENROLLMENTS ────────────────────────────────────────
 // GET /api/admin/enrollments
@@ -124,12 +125,12 @@ router.use('/admin/enrollments', enrollmentsRouter);
 //
 // Payments
 import paymentsRoutes, { adminTransactionsRouter } from '../modules/payments/routes';
-router.use('/payments', paymentsRoutes);
+router.use('/payments', checkMaintenanceMode, paymentsRoutes);
 router.use('/admin/transactions', adminTransactionsRouter);
 //
 // Jobs
 import jobsRoutes, { adminJobsRouter, adminJobApplicationsRouter } from '../modules/jobs/routes';
-router.use('/jobs', jobsRoutes);
+router.use('/jobs', checkMaintenanceMode, jobsRoutes);
 router.use('/admin/jobs', adminJobsRouter);
 router.use('/admin/job-applications', adminJobApplicationsRouter);
 //
@@ -152,57 +153,57 @@ router.use('/admin/settings', adminSettingsRouter);
 //
 // Blog
 import blogRoutes, { adminBlogRouter } from '../modules/blog/routes';
-router.use('/blog', blogRoutes);
+router.use('/blog', checkMaintenanceMode, blogRoutes);
 router.use('/admin/blog', adminBlogRouter);
 //
 // Gallery
 import galleryRoutes, { adminGalleryRouter } from '../modules/gallery/routes';
-router.use('/gallery', galleryRoutes);
+router.use('/gallery', checkMaintenanceMode, galleryRoutes);
 router.use('/admin/gallery', adminGalleryRouter);
 //
 // CMS
 import contentRoutes, { adminContentRouter } from '../modules/content/routes';
-router.use('/content', contentRoutes);
+router.use('/content', checkMaintenanceMode, contentRoutes);
 router.use('/admin/content', adminContentRouter);
 
 // Projects
 import projectsRoutes, { adminProjectsRouter } from '../modules/projects/routes';
-router.use('/projects', projectsRoutes);
+router.use('/projects', checkMaintenanceMode, projectsRoutes);
 router.use('/admin/projects', adminProjectsRouter);
 
 // FAQ
 import faqRoutes, { adminFaqRouter } from '../modules/faq/routes';
-router.use('/faq', faqRoutes);
+router.use('/faq', checkMaintenanceMode, faqRoutes);
 router.use('/admin/faq', adminFaqRouter);
 
 // Testimonials
 import testimonialsRoutes, { adminTestimonialsRouter } from '../modules/testimonials/routes';
-router.use('/testimonials', testimonialsRoutes);
+router.use('/testimonials', checkMaintenanceMode, testimonialsRoutes);
 router.use('/admin/testimonials', adminTestimonialsRouter);
 
 // Newsletter
 import newsletterRoutes, { adminNewsletterRouter } from '../modules/newsletter/routes';
-router.use('/newsletter', newsletterRoutes);
+router.use('/newsletter', checkMaintenanceMode, newsletterRoutes);
 router.use('/admin/newsletter', adminNewsletterRouter);
 
 // Partnerships
 import partnershipsRoutes, { adminPartnershipsRouter } from '../modules/partnerships/routes';
-router.use('/partnerships', partnershipsRoutes);
+router.use('/partnerships', checkMaintenanceMode, partnershipsRoutes);
 router.use('/admin/partnerships', adminPartnershipsRouter);
 
 // Contact
 import contactRoutes, { adminContactRouter } from '../modules/contact/routes';
-router.use('/contact', contactRoutes);
+router.use('/contact', checkMaintenanceMode, contactRoutes);
 router.use('/admin/contact', adminContactRouter);
 
 // Messages
 import messagesRoutes, { adminMessagesRouter } from '../modules/messages/routes';
-router.use('/messages', messagesRoutes);
+router.use('/messages', checkMaintenanceMode, messagesRoutes);
 router.use('/admin/messages', adminMessagesRouter);
 
 // Impact
 import impactRoutes, { adminImpactRouter } from '../modules/impact/routes';
-router.use('/impact', impactRoutes);
+router.use('/impact', checkMaintenanceMode, impactRoutes);
 router.use('/admin/impact', adminImpactRouter);
 
 // Logs

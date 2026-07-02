@@ -3,7 +3,9 @@
 import { prisma } from '../../shared/config/database';
 import { PasswordService } from '../../shared/utils/password';
 import { JwtService } from '../../shared/utils/jwt';
-import { LoginInput, UserResponse, LoginResponse, AuthError } from './types';
+import speakeasy from 'speakeasy';
+import qrcode from 'qrcode';
+import { LoginInput, UserResponse, LoginResponse, AuthError, UpdateProfileRequest, UpdateNotificationsRequest } from './types';
 
 export class AuthService {
   // ─── Login ────────────────────────────────────────────────────
@@ -24,7 +26,21 @@ export class AuthService {
       throw new AuthError(403, 'Your account has been deactivated. Please contact your administrator.', 'ACCOUNT_DEACTIVATED');
     }
 
-    // Generate single token (frontend stores as 'token' in localStorage)
+    // Handle 2FA
+    if (user.twoFactorEnabled) {
+      const tempToken = JwtService.generateTempToken({ id: user.id });
+      return {
+        requires2FA: true,
+        tempToken,
+      };
+    }
+
+    return this.completeLoginFlow(user, input.ipAddress, input.userAgent);
+  }
+
+  // ─── Complete Login Flow (Used by Login and 2FA Verify) ───────
+  private static async completeLoginFlow(user: any, ipAddress?: string, userAgent?: string): Promise<LoginResponse> {
+    // Generate tokens
     const token = JwtService.generateAccessToken({
       id: user.id,
       email: user.email,
@@ -47,9 +63,13 @@ export class AuthService {
         token,
         refreshToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        ipAddress,
+        userAgent,
       },
       update: {
         token,
+        ipAddress,
+        userAgent,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
@@ -178,20 +198,160 @@ export class AuthService {
   }
 
   // ─── Format User Response ─────────────────────────────────────
-  static formatUserResponse(user: any): UserResponse {
+  private static formatUserResponse(user: any): UserResponse {
     return {
       id: user.id,
-      name: user.name,
+      name: user.name, // Kept for compatibility
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      phone: user.phone,
+      location: user.location,
+      bio: user.bio,
       role: user.role,
-      department: user.department ?? null,
-      avatar: user.avatar ?? null,
+      department: user.department,
+      avatar: user.avatar,
       permissions: user.permissions || [],
+      twoFactorEnabled: user.twoFactorEnabled,
+      notificationPreferences: user.notificationPreferences ? (typeof user.notificationPreferences === 'string' ? JSON.parse(user.notificationPreferences) : user.notificationPreferences) : {},
       accountStatus: user.accountStatus,
       kycStatus: user.kycStatus,
       mustChangePassword: user.mustChangePassword,
       lastLogin: user.lastLogin ? user.lastLogin.toISOString() : null,
     };
+  }
+
+  // ─── Profile & Settings ───────────────────────────────────────
+  static async updateProfile(userId: string, data: UpdateProfileRequest): Promise<UserResponse> {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        location: data.location,
+        bio: data.bio,
+        department: data.department,
+        // We do NOT update email here.
+      },
+    });
+
+    await this.logActivity(userId, 'PROFILE_UPDATE', 'User', userId, 'success');
+    return this.formatUserResponse(user);
+  }
+
+  static async updateNotifications(userId: string, data: UpdateNotificationsRequest): Promise<UserResponse> {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        notificationPreferences: JSON.stringify(data.notificationPreferences),
+      },
+    });
+
+    return this.formatUserResponse(user);
+  }
+
+  // ─── 2FA Flow ─────────────────────────────────────────────────
+  static async verify2FA(tempToken: string, token: string, ipAddress?: string, userAgent?: string): Promise<LoginResponse> {
+    const payload = JwtService.verifyTempToken(tempToken);
+    if (!payload) throw new AuthError(401, 'Session expired. Please log in again.', 'TOKEN_EXPIRED');
+
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (!user) throw new AuthError(401, 'User not found', 'UNAUTHORIZED');
+    if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new AuthError(400, '2FA is not enabled for this account.', 'INVALID_REQUEST');
+    }
+
+    const isValid = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token,
+      window: 1, // Allow 1 step before/after
+    });
+
+    if (!isValid) throw new AuthError(401, 'Invalid 2FA code', 'INVALID_CREDENTIALS');
+
+    return this.completeLoginFlow(user, ipAddress, userAgent);
+  }
+
+  static async generate2FA(userId: string): Promise<{ secret: string; qrCode: string }> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AuthError(404, 'User not found', 'NOT_FOUND');
+
+    const secret = speakeasy.generateSecret({
+      name: `ZyraTech Hub (${user.email})`,
+    });
+
+    const qrCode = await qrcode.toDataURL(secret.otpauth_url!);
+
+    // Store secret temporarily in DB, but don't enable it yet
+    await prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: secret.base32 },
+    });
+
+    return { secret: secret.base32, qrCode };
+  }
+
+  static async enable2FA(userId: string, token: string): Promise<UserResponse> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.twoFactorSecret) throw new AuthError(400, '2FA not initialized', 'INVALID_REQUEST');
+
+    const isValid = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token,
+      window: 1,
+    });
+
+    if (!isValid) throw new AuthError(400, 'Invalid 2FA code', 'INVALID_CREDENTIALS');
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: true },
+    });
+
+    await this.logActivity(userId, 'ENABLE_2FA', 'User', userId, 'success');
+    return this.formatUserResponse(updatedUser);
+  }
+
+  static async disable2FA(userId: string): Promise<UserResponse> {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: false, twoFactorSecret: null },
+    });
+
+    await this.logActivity(userId, 'DISABLE_2FA', 'User', userId, 'success');
+    return this.formatUserResponse(user);
+  }
+
+  // ─── Session Management ───────────────────────────────────────
+  static async getActiveSessions(userId: string): Promise<any[]> {
+    return prisma.session.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        userAgent: true,
+        ipAddress: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  static async revokeSession(userId: string, sessionId: string): Promise<void> {
+    await prisma.session.deleteMany({
+      where: { id: sessionId, userId },
+    });
+  }
+
+  static async revokeAllOtherSessions(userId: string, currentSessionToken: string): Promise<void> {
+    await prisma.session.deleteMany({
+      where: {
+        userId,
+        token: { not: currentSessionToken },
+      },
+    });
   }
 
   // ─── Activity Logger ──────────────────────────────────────────
