@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponseHandler } from '../../shared/utils/response';
+import { s3Service } from '../../shared/services/s3.service';
 import { TrainingApplicationsService } from './service';
 import { ApplicationError } from './types';
 
@@ -24,7 +25,7 @@ export class TrainingApplicationsController {
       const isAdvanced = ADVANCED_CATEGORIES.includes(categoryHint.toLowerCase());
 
       // Validate input
-      const errors = TrainingApplicationsService.validateInput(req.body, isAdvanced, hasFile);
+      const errors = await TrainingApplicationsService.validateInput(req.body, isAdvanced, hasFile);
 
       if (Object.keys(errors).length > 0) {
         return ApiResponseHandler.error(
@@ -39,8 +40,8 @@ export class TrainingApplicationsController {
       // Build CV file URL if uploaded
       let cvFileUrl: string | undefined;
       if (req.file) {
-        // TODO: Upload to cloud storage. For now store as local path
-        cvFileUrl = `uploads/cv/${courseId}/${Date.now()}_${req.file.originalname}`;
+        const fileName = `${courseId}-${req.file.originalname}`;
+        cvFileUrl = await s3Service.uploadDocument(fileName, req.file.buffer, req.file.mimetype);
       }
 
       const result = await TrainingApplicationsService.submitApplication({

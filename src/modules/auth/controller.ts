@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponseHandler } from '../../shared/utils/response';
+import { s3Service } from '../../shared/services/s3.service';
 import { AuthService } from './service';
 import { AuthValidators } from './validators';
 import { AuthError } from './types';
@@ -15,9 +16,14 @@ export class AuthController {
         return ApiResponseHandler.error(res, 'Validation failed', 400, validation.errors, 'VALIDATION_ERROR');
       }
 
+      const ipAddress = req.ip || req.headers['x-forwarded-for'] as string;
+      const userAgent = req.headers['user-agent'] as string;
+
       const result = await AuthService.login({
         email: req.body.email,
         password: req.body.password,
+        ipAddress,
+        userAgent,
       });
 
       return ApiResponseHandler.success(res, result, 'Login successful');
@@ -148,9 +154,8 @@ export class AuthController {
         );
       }
 
-      // TODO: Upload file to cloud storage (S3/Cloudinary), get URL back
-      // For now, use a placeholder — this will be replaced when storage is configured
-      const documentUrl = `uploads/kyc/${userId}/${Date.now()}_${file.originalname}`;
+      const fileName = `${userId}-${file.originalname}`;
+      const documentUrl = await s3Service.uploadDocument(fileName, file.buffer, file.mimetype);
 
       await AuthService.submitKyc(userId, documentUrl, documentType);
 
@@ -166,6 +171,139 @@ export class AuthController {
     }
   }
 
+  // ─── PUT /api/auth/profile ────────────────────────────────────
+  static async updateProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      const validation = AuthValidators.validateUpdateProfileRequest(req.body);
+      if (!validation.valid) return ApiResponseHandler.error(res, 'Validation failed', 400, validation.errors, 'VALIDATION_ERROR');
+
+      const user = await AuthService.updateProfile(userId, req.body);
+      return ApiResponseHandler.success(res, user, 'Profile updated successfully');
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // ─── PUT /api/auth/profile/notifications ──────────────────────
+  static async updateNotifications(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      const user = await AuthService.updateNotifications(userId, req.body);
+      return ApiResponseHandler.success(res, user, 'Notification preferences updated successfully');
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // ─── POST /api/auth/2fa/verify ────────────────────────────────
+  static async verify2FA(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { tempToken, token } = req.body;
+      if (!tempToken || !token) return ApiResponseHandler.error(res, 'Temp token and 2FA token are required', 400, null, 'VALIDATION_ERROR');
+
+      const ipAddress = req.ip || req.headers['x-forwarded-for'] as string;
+      const userAgent = req.headers['user-agent'] as string;
+
+      const result = await AuthService.verify2FA(tempToken, token, ipAddress, userAgent);
+      return ApiResponseHandler.success(res, result, '2FA verified successfully');
+    } catch (error) {
+      if (error instanceof AuthError) return ApiResponseHandler.error(res, error.message, error.statusCode, null, error.code);
+      return next(error);
+    }
+  }
+
+  // ─── POST /api/auth/2fa/generate ──────────────────────────────
+  static async generate2FA(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      const result = await AuthService.generate2FA(userId);
+      return ApiResponseHandler.success(res, result, '2FA initialized');
+    } catch (error) {
+      if (error instanceof AuthError) return ApiResponseHandler.error(res, error.message, error.statusCode, null, error.code);
+      return next(error);
+    }
+  }
+
+  // ─── POST /api/auth/2fa/enable ────────────────────────────────
+  static async enable2FA(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      const { token } = req.body;
+      if (!token) return ApiResponseHandler.error(res, '2FA token is required to enable', 400, null, 'VALIDATION_ERROR');
+
+      const user = await AuthService.enable2FA(userId, token);
+      return ApiResponseHandler.success(res, user, '2FA enabled successfully');
+    } catch (error) {
+      if (error instanceof AuthError) return ApiResponseHandler.error(res, error.message, error.statusCode, null, error.code);
+      return next(error);
+    }
+  }
+
+  // ─── POST /api/auth/2fa/disable ───────────────────────────────
+  static async disable2FA(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      const user = await AuthService.disable2FA(userId);
+      return ApiResponseHandler.success(res, user, '2FA disabled successfully');
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // ─── GET /api/auth/sessions ───────────────────────────────────
+  static async getSessions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      const sessions = await AuthService.getActiveSessions(userId);
+      return ApiResponseHandler.success(res, sessions, 'Active sessions retrieved');
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // ─── DELETE /api/auth/sessions/:id ────────────────────────────
+  static async revokeSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      await AuthService.revokeSession(userId, req.params.id as string);
+      return ApiResponseHandler.success(res, {}, 'Session revoked successfully');
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // ─── DELETE /api/auth/sessions ────────────────────────────────
+  static async revokeAllSessions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return ApiResponseHandler.error(res, 'Authentication required', 401, null, 'UNAUTHORIZED');
+
+      const authHeader = req.headers.authorization;
+      const currentToken = authHeader?.split(' ')[1];
+
+      if (!currentToken) return ApiResponseHandler.error(res, 'Current token required', 400, null, 'VALIDATION_ERROR');
+
+      await AuthService.revokeAllOtherSessions(userId, currentToken);
+      return ApiResponseHandler.success(res, {}, 'All other sessions revoked successfully');
+    } catch (error) {
+      return next(error);
+    }
+  }
   // ─── POST /api/auth/forgot-password ───────────────────────────
   static async forgotPassword(req: Request, res: Response, next: NextFunction) {
     try {

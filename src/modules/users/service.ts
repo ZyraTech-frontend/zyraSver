@@ -4,6 +4,7 @@
 
 import { prisma } from '../../shared/config/database';
 import { PasswordService } from '../../shared/utils/password';
+import { EmailService } from '../../shared/services/email';
 import { UserResponse, UserError, CreateUserInput, UpdateUserInput } from './types';
 
 export class UserService {
@@ -74,6 +75,11 @@ export class UserService {
     });
 
     await this.logActivity('CREATE_ADMIN', 'User', user.id, 'success');
+    
+    // Send the welcome email with the credentials asynchronously
+    // We don't await this so it doesn't block the API response
+    EmailService.sendAdminWelcomeEmail(user.email, user.name, input.password);
+
     return this.formatUserResponse(user);
   }
 

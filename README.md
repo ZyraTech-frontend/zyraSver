@@ -1,43 +1,95 @@
-# ZyraTech Hub — Backend API
+# ZyraTech Hub — Backend API 🚀
 
-> The official Node.js / Express backend powering the ZyraTech Hub STEM Education Platform.
+> The official enterprise-grade Node.js backend powering the **ZyraTech Hub STEM Education Platform**.
 
-## 🚀 Overview
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=white)
 
-This repository contains the robust, scalable backend infrastructure for ZyraTech Hub. It is built to handle everything from student enrollment and Paystack payments, to dynamic CMS content management, job applications, and granular admin department permissions.
+## 📖 Overview
+
+This repository contains the robust, scalable, and fully Dockerized backend infrastructure for ZyraTech Hub. It is built to handle everything from student enrollment and Paystack payments to dynamic CMS content management, job applications, and granular Admin Department permissions.
 
 ## 🛠️ Tech Stack
 
-- **Runtime:** Node.js
-- **Framework:** Express.js (TypeScript)
+- **Runtime:** Node.js (v20)
+- **Framework:** Express.js + TypeScript
 - **Database:** PostgreSQL (Hosted on Supabase)
 - **ORM:** Prisma
-- **Authentication:** JWT (JSON Web Tokens) with Role-Based Access Control (RBAC)
-- **File Storage:** AWS S3 / Supabase Storage (via Multer)
-- **Payments:** Paystack API Integration
+- **Storage:** Supabase Storage (S3 API via AWS SDK)
+- **Security:** Helmet, Express Rate Limit, JWT, bcrypt
+- **CI/CD:** GitHub Actions
+- **Infrastructure:** Docker & Docker Compose
 
-## 📦 Core Modules Built
+---
 
-1. **Authentication & RBAC:** Secure login, password management, and granular department permissions (e.g., `training_courses`, `blog_articles`, `payments`).
-2. **Users & KYC:** Admin management and secure identity verification handling.
-3. **Training & Applications:** Course management and multi-step student enrollment endpoints.
-4. **Jobs & Career:** Career portal integration for job listings and applicant tracking.
-5. **Payments:** Automated webhook handling for Paystack transactions.
-6. **CMS & Settings:** Dynamic page content, hero sliders, and global platform configurations.
-7. **Blog & Projects:** SEO-friendly content publishing and project portfolio management.
-8. **Gallery:** Media albums supporting both images and embedded videos.
-9. **FAQ & Testimonials:** Platform support and social proof management.
-10. **Partnerships & Contact:** Public inquiry forms and administrative inbox.
-11. **Impact & Activity Logs:** Platform statistics tracking and system-wide audit logs.
+## 🚀 Quick Start (Recommended)
 
-## 💻 Running Locally
+The easiest way to run the API locally is using Docker. This ensures you have the exact same environment as production.
 
-1. Clone the repository.
-2. Run `npm install` to install all dependencies.
-3. Configure your `.env` file with your `DATABASE_URL` and `DIRECT_URL`.
-4. Run `npx prisma generate` to build the Prisma Client.
-5. Run `npm run dev` to start the development server on port 5000.
+### 1. Configure Environment
+Create a `.env` file from the example template:
+```bash
+cp .env.example .env
+```
+Open `.env` and fill in your Supabase `DATABASE_URL` and S3 Access Keys.
 
-## 🔒 Security
+### 2. Run with Docker
+Start the database and the API in the background:
+```bash
+docker-compose up -d
+```
+That's it! Docker will automatically install dependencies, run Prisma migrations, run the database seeder, and start the API on `http://localhost:5000`.
 
-All admin routes are strictly protected by `authMiddleware` and `checkPermission` middleware to ensure zero-trust security across different organizational departments.
+---
+
+## 💻 Manual Local Setup
+
+If you prefer to run the application natively without Docker:
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Generate Prisma Client
+npx prisma generate
+
+# 3. Apply database migrations (if setting up for the first time)
+npx prisma migrate dev
+
+# 4. Run the database seeder
+npm run db:seed
+
+# 5. Start the development server
+npm run dev
+```
+
+---
+
+## 🔐 Security & Infrastructure
+
+### 1. Role-Based Access Control (RBAC)
+All admin routes are strictly protected by `authMiddleware` and `checkPermission` middleware to ensure zero-trust security across different organizational departments (e.g., `training_courses`, `payments`, `settings`).
+
+### 2. File Uploads (Supabase Storage)
+The backend intercepts file uploads `(multer)` in memory and seamlessly streams them directly to your **Supabase S3 Bucket**. No files are stored locally, making the application 100% stateless and ready for cloud scaling.
+
+### 3. CI/CD Pipeline
+This repository includes a fully automated **GitHub Actions** pipeline (`.github/workflows/ci-cd.yml`):
+- **CI:** Automatically tests and compiles TypeScript on every Pull Request.
+- **CD:** Automatically deploys to the production server upon merging to the `main` branch.
+
+---
+
+## 📜 Available NPM Commands
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Starts the server in development mode with hot-reloading (nodemon). |
+| `npm run build` | Compiles TypeScript into the `/dist` directory. |
+| `npm start` | Runs the compiled JavaScript in production mode. |
+| `npm run db:push` | Pushes the Prisma schema to the database (use for dev only). |
+| `npm run db:seed` | Runs the seeder to populate the DB with Super Admins & Settings. |

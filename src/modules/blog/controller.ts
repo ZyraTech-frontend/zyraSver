@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponseHandler } from '../../shared/utils/response';
+import { s3Service } from '../../shared/services/s3.service';
 import { BlogService } from './service';
 import { BlogError } from './types';
 
@@ -122,11 +123,10 @@ export class BlogController {
       if (!req.file) {
         return ApiResponseHandler.error(res, 'No file uploaded', 400, null, 'VALIDATION_ERROR');
       }
+      const fileName = `blog-${Date.now()}-${req.file.originalname}`;
+      const url = await s3Service.uploadImage(fileName, req.file.buffer, req.file.mimetype);
       
-      // Mocked URL. Replace with S3 or actual storage solution logic
-      const mockUrl = `https://storage.zyratechhub.com/blog/${Date.now()}-${req.file.originalname}`;
-      
-      return ApiResponseHandler.success(res, { url: mockUrl }, 'File uploaded successfully');
+      return ApiResponseHandler.success(res, { url }, 'File uploaded successfully');
     } catch (error) {
       return next(error);
     }
