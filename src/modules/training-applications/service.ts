@@ -183,7 +183,7 @@ export class TrainingApplicationsService {
     ]);
 
     return {
-      applications: applications.map((app) => ({
+      applications: applications.map((app: any) => ({
         id: app.id,
         applicationId: `app_${app.createdAt.getFullYear()}_${app.id.slice(-6)}`,
         courseTitle: app.course.title,

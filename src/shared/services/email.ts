@@ -19,7 +19,7 @@ export class EmailService {
 
     // Helper to get setting value
     const getSetting = (key: string) => {
-      const setting = emailSettings.find((s) => s.key === key);
+      const setting = emailSettings.find((s: any) => s.key === key);
       return setting ? setting.value.replace(/^"|"$/g, '') : null; // Remove quotes if JSON stringified
     };
 
