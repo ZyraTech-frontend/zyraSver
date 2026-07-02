@@ -249,7 +249,7 @@ export class JobsService {
     ]);
 
     return {
-      applications: applications.map((app) => ({
+      applications: applications.map((app: any) => ({
         id: app.id,
         jobTitle: app.job.title,
         applicantName: `${app.firstName} ${app.lastName}`,
