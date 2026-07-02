@@ -12,6 +12,7 @@ export class JwtService {
   private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || `${JwtService.SECRET}-refresh`;
   private static readonly ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '900'; // 15 min
   private static readonly REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '604800'; // 7 days
+  private static readonly TEMP_EXPIRY = '300'; // 5 min for 2FA
 
   /**
    * Generate an access token
@@ -58,6 +59,26 @@ export class JwtService {
   static verifyRefreshToken(token: string): TokenPayload | null {
     try {
       return jwt.verify(token, this.REFRESH_SECRET) as TokenPayload;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  /**
+   * Generate a short-lived temp token for 2FA flow
+   */
+  static generateTempToken(payload: { id: string }): string {
+    return jwt.sign(payload, this.SECRET, {
+      expiresIn: parseInt(this.TEMP_EXPIRY, 10),
+    });
+  }
+
+  /**
+   * Verify a temp token for 2FA flow
+   */
+  static verifyTempToken(token: string): { id: string } | null {
+    try {
+      return jwt.verify(token, this.SECRET) as { id: string };
     } catch (_error) {
       return null;
     }

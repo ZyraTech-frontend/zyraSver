@@ -86,12 +86,68 @@ export class AuthValidators {
   }
 
   /**
+   * Validate update profile request
+   */
+  static validateUpdateProfileRequest(body: any): { valid: boolean; errors: Record<string, string> } {
+    const errors: Record<string, string> = {};
+
+    if (body.firstName && typeof body.firstName !== 'string') errors.firstName = 'First name must be a string';
+    if (body.lastName && typeof body.lastName !== 'string') errors.lastName = 'Last name must be a string';
+    if (body.phone && typeof body.phone !== 'string') errors.phone = 'Phone must be a string';
+    if (body.location && typeof body.location !== 'string') errors.location = 'Location must be a string';
+    if (body.bio && typeof body.bio !== 'string') errors.bio = 'Bio must be a string';
+    if (body.department && typeof body.department !== 'string') errors.department = 'Department must be a string';
+
+    return {
+      valid: Object.keys(errors).length === 0,
+      errors,
+    };
+  }
+
+  /**
+   * Validate update notifications request
+   */
+  static validateUpdateNotificationsRequest(body: any): { valid: boolean; errors: Record<string, string> } {
+    const errors: Record<string, string> = {};
+
+    if (body.emailNotifications !== undefined && typeof body.emailNotifications !== 'boolean') {
+      errors.emailNotifications = 'Email notifications must be a boolean';
+    }
+    if (body.pushNotifications !== undefined && typeof body.pushNotifications !== 'boolean') {
+      errors.pushNotifications = 'Push notifications must be a boolean';
+    }
+
+    return {
+      valid: Object.keys(errors).length === 0,
+      errors,
+    };
+  }
+
+  /**
+   * Validate verify 2FA request
+   */
+  static validateVerify2FARequest(body: any): { valid: boolean; errors: Record<string, string> } {
+    const errors: Record<string, string> = {};
+
+    if (!body.token || typeof body.token !== 'string') {
+      errors.token = '2FA Token is required';
+    }
+
+    return {
+      valid: Object.keys(errors).length === 0,
+      errors,
+    };
+  }
+
+  /**
    * Validate email format
    */
   private static isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
+
+
 
   /**
    * Validate password strength

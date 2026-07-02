@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 
 // Shared infrastructure
@@ -16,6 +17,11 @@ dotenv.config();
 // Initialize Express
 const app: Express = express();
 const PORT = process.env.API_PORT || 5000;
+
+// ============================================
+// SECURITY HEADERS (Helmet)
+// ============================================
+app.use(helmet());
 
 // ============================================
 // CORS CONFIGURATION

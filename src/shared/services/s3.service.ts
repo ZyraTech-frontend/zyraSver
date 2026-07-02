@@ -17,6 +17,8 @@ export class S3Service {
   constructor() {
     this.s3Client = new S3Client({
       region: process.env.AWS_REGION || 'us-east-1',
+      endpoint: process.env.S3_ENDPOINT || 'https://cblfpfsvavahttedfloe.supabase.co/storage/v1/s3',
+      forcePathStyle: true, // Required for Supabase S3
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
@@ -24,7 +26,7 @@ export class S3Service {
     });
 
     this.bucket = process.env.AWS_S3_BUCKET || 'zyratech-assets';
-    this.cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN || '';
+    this.cloudFrontDomain = ''; // Supabase doesn't use CloudFront by default
   }
 
   /**

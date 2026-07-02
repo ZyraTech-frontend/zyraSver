@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiResponseHandler } from '../../shared/utils/response';
 import { SettingsService } from './service';
 import { SettingsError } from './types';
+import { EmailService } from '../../shared/services/email';
 
 export class SettingsController {
   // ─── PUBLIC ENDPOINTS ─────────────────────────────────────────
@@ -37,6 +38,11 @@ export class SettingsController {
       }
 
       const setting = await SettingsService.upsertSetting(req.body, req.user?.id);
+      
+      if (req.body.category === 'email') {
+        EmailService.reloadConfig();
+      }
+
       return ApiResponseHandler.success(res, setting, 'Setting updated successfully');
     } catch (error) {
       if (error instanceof SettingsError) {
@@ -54,6 +60,11 @@ export class SettingsController {
       }
 
       const results = await SettingsService.bulkUpsertSettings(settings, req.user?.id);
+
+      if (settings.some((s: any) => s.category === 'email')) {
+        EmailService.reloadConfig();
+      }
+
       return ApiResponseHandler.success(res, results, 'Settings updated successfully');
     } catch (error) {
       if (error instanceof SettingsError) {

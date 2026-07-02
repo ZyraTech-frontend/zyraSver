@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponseHandler } from '../../shared/utils/response';
+import { s3Service } from '../../shared/services/s3.service';
 import { TestimonialService } from './service';
 import { TestimonialError } from './types';
 
@@ -102,8 +103,9 @@ export class TestimonialController {
         return ApiResponseHandler.error(res, 'No file uploaded', 400, null, 'VALIDATION_ERROR');
       }
       
-      const mockUrl = `https://storage.zyratechhub.com/testimonials/${Date.now()}-${req.file.originalname}`;
-      return ApiResponseHandler.success(res, { url: mockUrl }, 'File uploaded successfully');
+      const fileName = `testimonials-${Date.now()}-${req.file.originalname}`;
+      const url = await s3Service.uploadImage(fileName, req.file.buffer, req.file.mimetype);
+      return ApiResponseHandler.success(res, { url }, 'File uploaded successfully');
     } catch (error) {
       return next(error);
     }
