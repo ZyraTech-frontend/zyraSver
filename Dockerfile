@@ -12,7 +12,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install all dependencies (including devDependencies for building)
+# Install openssl for Prisma, and all dependencies (including devDependencies for building)
+RUN apk add --no-cache openssl
 RUN npm ci
 
 # Generate Prisma Client
@@ -38,7 +39,8 @@ RUN addgroup -g 1001 -S zyratech && \
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies only
+# Install openssl for Prisma, and production dependencies only
+RUN apk add --no-cache openssl
 RUN npm ci --only=production
 
 # Generate Prisma Client in production image
