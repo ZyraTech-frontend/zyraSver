@@ -4,16 +4,18 @@
 # ══════════════════════════════════════════════════════════════
 
 # ── Stage 1: Build ────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
+
+# Install OpenSSL for Prisma engine
+RUN apt-get update -y && apt-get install -y openssl libssl-dev
 
 # Copy package files first for layer caching
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install openssl for Prisma, and all dependencies (including devDependencies for building)
-RUN apk add --no-cache openssl
+# Install all dependencies (including devDependencies for building)
 RUN npm ci
 
 # Generate Prisma Client
@@ -27,20 +29,22 @@ COPY src ./src/
 RUN npm run build
 
 # ── Stage 2: Production ──────────────────────────────────────
-FROM node:20-alpine AS production
+FROM node:20 AS production
 
 WORKDIR /app
 
+# Install OpenSSL for Prisma engine at runtime
+RUN apt-get update -y && apt-get install -y openssl libssl-dev && rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user for security
-RUN addgroup -g 1001 -S zyratech && \
-    adduser -S zyratech -u 1001
+RUN groupadd -g 1001 zyratech && \
+    useradd -m -u 1001 -g zyratech zyratech
 
 # Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install openssl for Prisma, and production dependencies only
-RUN apk add --no-cache openssl
+# Install production dependencies only
 RUN npm ci --only=production
 
 # Generate Prisma Client in production image
