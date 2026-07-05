@@ -7,24 +7,7 @@
 version: "3.8"
 
 services:
-  # ── PostgreSQL Database ──────────────────────────────────────
-  db:
-    image: postgres:15-alpine
-    container_name: zyratech-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER:-zyratech}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-zyratech_secure_password}
-      POSTGRES_DB: ${DB_NAME:-zyratech_hub}
-    ports:
-      - "${DB_PORT:-5432}:5432"
-    volumes:
-      - zyratech_pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-zyratech} -d ${DB_NAME:-zyratech_hub}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+
 
   # ── ZyraTech API ─────────────────────────────────────────────
   api:
@@ -35,18 +18,8 @@ services:
     restart: unless-stopped
     ports:
       - "${API_PORT:-5000}:5000"
-    environment:
-      NODE_ENV: production
-      API_PORT: 5000
-      DATABASE_URL: postgresql://${DB_USER:-zyratech}:${DB_PASSWORD:-zyratech_secure_password}@db:5432/${DB_NAME:-zyratech_hub}?schema=public
-      DIRECT_URL: postgresql://${DB_USER:-zyratech}:${DB_PASSWORD:-zyratech_secure_password}@db:5432/${DB_NAME:-zyratech_hub}?schema=public
-      JWT_SECRET: ${JWT_SECRET:-change_this_to_a_very_long_random_string}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_this_refresh_secret_too}
-      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
-      FRONTEND_URL: ${FRONTEND_URL:-https://zyratechhub.com}
-    depends_on:
-      db:
-        condition: service_healthy
+    env_file:
+      - .env
     # Run migrations, seed, then start the server
     command: >
       sh -c "
@@ -58,6 +31,4 @@ services:
         node dist/index.js
       "
 
-volumes:
-  zyratech_pgdata:
-    driver: local
+

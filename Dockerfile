@@ -4,9 +4,12 @@
 # ══════════════════════════════════════════════════════════════
 
 # ── Stage 1: Build ────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
+
+# Install OpenSSL for Prisma engine
+RUN apt-get update -y && apt-get install -y openssl libssl-dev
 
 # Copy package files first for layer caching
 COPY package*.json ./
@@ -26,13 +29,16 @@ COPY src ./src/
 RUN npm run build
 
 # ── Stage 2: Production ──────────────────────────────────────
-FROM node:20-alpine AS production
+FROM node:20 AS production
 
 WORKDIR /app
 
+# Install OpenSSL for Prisma engine at runtime
+RUN apt-get update -y && apt-get install -y openssl libssl-dev && rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user for security
-RUN addgroup -g 1001 -S zyratech && \
-    adduser -S zyratech -u 1001
+RUN groupadd -g 1001 zyratech && \
+    useradd -m -u 1001 -g zyratech zyratech
 
 # Copy package files
 COPY package*.json ./
