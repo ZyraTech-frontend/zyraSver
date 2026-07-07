@@ -45,10 +45,11 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Install production dependencies only
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
-# Generate Prisma Client in production image
-RUN npx prisma generate
+# Reuse the Prisma Client generated in the builder stage.
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Copy built code from builder stage
 COPY --from=builder /app/dist ./dist
@@ -67,8 +68,8 @@ EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
+  CMD node -e "fetch('http://localhost:5000/health').then((r)=>process.exit(r.ok ? 0 : 1)).catch(()=>process.exit(1))"
 
 # Start the application
-# Prisma migrations are handled by docker-compose command
+# Prisma migrations are handled outside the long-running API task.
 CMD ["node", "dist/index.js"]

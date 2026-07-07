@@ -64,10 +64,7 @@ export class PaymentsController {
         return;
       }
 
-      // Important: Ensure Express didn't parse the body as JSON if we need raw body for HMAC.
-      // Or if using standard body-parser, `req.body` needs to be stringified back exactly,
-      // but it's safer to configure a custom raw middleware for this route if possible.
-      // Assuming raw string buffer in `req.rawBody` provided by a specific middleware.
+      // Captured by express.json({ verify }) before JSON parsing, preserving HMAC input.
       const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
       await PaymentsService.processWebhook(signature, rawBody);

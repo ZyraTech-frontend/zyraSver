@@ -18,6 +18,9 @@ dotenv.config();
 const app: Express = express();
 const PORT = process.env.API_PORT || 5000;
 
+// ECS/ALB terminates TLS and forwards the original client IP in proxy headers.
+app.set('trust proxy', 1);
+
 // ============================================
 // SECURITY HEADERS (Helmet)
 // ============================================
@@ -53,7 +56,15 @@ app.use(cors({
 // ============================================
 // BODY PARSER
 // ============================================
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, _res, buf) => {
+    const expressReq = req as Request & { rawBody?: Buffer };
+    if (expressReq.originalUrl === '/api/payments/webhook') {
+      expressReq.rawBody = Buffer.from(buf);
+    }
+  },
+}));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // ============================================
@@ -119,11 +130,14 @@ async function start() {
 start();
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('\nShutting down gracefully...');
+async function shutdown(signal: string) {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
   await disconnectDatabase();
   process.exit(0);
-});
+}
+
+process.on('SIGINT', () => void shutdown('SIGINT'));
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
 export { prisma };
 export default app;
