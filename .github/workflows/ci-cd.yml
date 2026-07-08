@@ -65,7 +65,7 @@ jobs:
 
       # 1. Apply database migrations safely over direct port 5432
       - name: Run Prisma Migration Deploy
-        run: npx prisma migrate deploy
+        run: npx prisma migrate resolve --applied 20260707000000_initial_schema || npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
