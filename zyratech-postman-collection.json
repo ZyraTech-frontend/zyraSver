@@ -1,15 +1,15 @@
 {
   "info": {
-    "name": "ZyraTech Hub Professional API - COMPLETE",
-    "description": "The Exhaustive API documentation containing every single endpoint built for ZyraTech Hub. Includes all CRUD operations, Admin routes, and Public routes. Covers 19 modules with 100+ endpoints.",
+    "name": "ZyraTech Hub API - Production",
+    "description": "Complete API documentation for ZyraTech Hub STEM Education Platform. Base URL: http://3.16.26.212:5000/api — 19 modules, 100+ endpoints. To get started: run the Login request, copy the token from the response, and paste it into the admin_token collection variable.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:5000/api",
+      "value": "http://3.16.26.212:5000/api",
       "type": "string",
-      "description": "The base URL for the API."
+      "description": "Production API base URL"
     },
     {
       "key": "admin_token",
@@ -3252,10 +3252,10 @@
                 "partnerships"
               ]
             },
-            "description": "Submit a partnership application.",
+            "description": "Submit a partnership application. Required: organizationName, contactName, email, agreedToTerms (must be true).",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"organization\": \"Tech Corp International\",\n  \"contactName\": \"Bob Manager\",\n  \"email\": \"bob@techcorp.com\",\n  \"phone\": \"0200000000\",\n  \"proposal\": \"We would like to partner on STEM education initiatives.\"\n}"
+              "raw": "{\n  \"organizationName\": \"Tech Corp International\",\n  \"contactName\": \"Bob Manager\",\n  \"email\": \"bob@techcorp.com\",\n  \"phone\": \"0200000000\",\n  \"proposal\": \"We would like to partner on STEM education initiatives.\",\n  \"agreedToTerms\": true\n}"
             }
           }
         },
@@ -3400,10 +3400,10 @@
                 "contact"
               ]
             },
-            "description": "Submit a contact form message.",
+            "description": "Submit a contact form message. Required: fullName, email, message.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Jane Visitor\",\n  \"email\": \"jane@example.com\",\n  \"subject\": \"General Inquiry\",\n  \"message\": \"I have a question about your robotics courses.\"\n}"
+              "raw": "{\n  \"fullName\": \"Jane Visitor\",\n  \"email\": \"jane@example.com\",\n  \"subject\": \"General Inquiry\",\n  \"message\": \"I have a question about your robotics courses.\"\n}"
             }
           }
         },
@@ -3548,10 +3548,10 @@
                 "messages"
               ]
             },
-            "description": "Submit a general message to the platform.",
+            "description": "Submit a general message to the platform. Required: sender, email, content.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Visitor\",\n  \"email\": \"john@example.com\",\n  \"subject\": \"Question\",\n  \"message\": \"What courses do you offer for beginners?\"\n}"
+              "raw": "{\n  \"sender\": \"John Visitor\",\n  \"email\": \"john@example.com\",\n  \"content\": \"What courses do you offer for beginners?\"\n}"
             }
           }
         },
