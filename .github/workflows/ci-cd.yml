@@ -71,6 +71,7 @@ jobs:
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
       # 2. Authenticate securely with AWS via OIDC role assignment
       - name: Configure AWS credentials
+        id: aws-creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
@@ -97,3 +98,5 @@ jobs:
           cluster: default
           service-name: zyratech-backend-service
           image: ${{ steps.build-image.outputs.image }}
+          execution-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsTaskExecutionRole
+          task-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsTaskExecutionRole
