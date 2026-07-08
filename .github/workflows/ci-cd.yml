@@ -67,8 +67,8 @@ jobs:
       - name: Run Prisma Migration Deploy
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.DIRECT_URL }} 
-
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
       # 2. Authenticate securely with AWS via OIDC role assignment
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
