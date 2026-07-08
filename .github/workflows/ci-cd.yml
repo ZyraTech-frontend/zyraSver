@@ -100,3 +100,4 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           execution-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsTaskExecutionRole
           task-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsTaskExecutionRole
+          infrastructure-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsInfrastructureRoleForExpressServices
