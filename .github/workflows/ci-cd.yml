@@ -95,5 +95,5 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-express-service@v1
         with:
           cluster: default
-          service: zyratech-backend-service
+          service-name: zyratech-backend-service
           image: ${{ steps.build-image.outputs.image }}
