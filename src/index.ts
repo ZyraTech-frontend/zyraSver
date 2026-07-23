@@ -17,7 +17,7 @@ dotenv.config();
 // Initialize Express
 const app: Express = express();
 // Azure uses WEBSITES_PORT, fallback to API_PORT (dev), then PORT, then 8080
-const PORT = process.env.WEBSITES_PORT || process.env.API_PORT || process.env.PORT || 8080;
+const PORT = parseInt(process.env.WEBSITES_PORT || process.env.API_PORT || process.env.PORT || '8080', 10);
 
 // ECS/ALB and Azure load balancers forward the original client IP in proxy headers.
 app.set('trust proxy', 1);
