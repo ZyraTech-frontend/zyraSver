@@ -38,11 +38,11 @@ cp .env.example .env
 Open `.env` and fill in your Supabase `DATABASE_URL` and S3 Access Keys.
 
 ### 2. Run with Docker
-Start the database and the API in the background:
+Start the API in the background:
 ```bash
 docker-compose up -d
 ```
-That's it! Docker will automatically install dependencies, run Prisma migrations, run the database seeder, and start the API on `http://localhost:5000`.
+Docker starts the API on `http://localhost:5000`. Database migrations are run separately so containers do not mutate the database every time they boot.
 
 ---
 
@@ -57,8 +57,8 @@ npm install
 # 2. Generate Prisma Client
 npx prisma generate
 
-# 3. Apply database migrations (if setting up for the first time)
-npx prisma migrate dev
+# 3. Apply local database migrations
+npm run db:migrate:dev
 
 # 4. Run the database seeder
 npm run db:seed
@@ -78,9 +78,9 @@ All admin routes are strictly protected by `authMiddleware` and `checkPermission
 The backend intercepts file uploads `(multer)` in memory and seamlessly streams them directly to your **Supabase S3 Bucket**. No files are stored locally, making the application 100% stateless and ready for cloud scaling.
 
 ### 3. CI/CD Pipeline
-This repository includes a fully automated **GitHub Actions** pipeline (`.github/workflows/ci-cd.yml`):
-- **CI:** Automatically tests and compiles TypeScript on every Pull Request.
-- **CD:** Automatically deploys to the production server upon merging to the `main` branch.
+This repository includes a GitHub Actions pipeline (`.github/workflows/ci-cd.yml`):
+- **CI:** Typechecks and builds TypeScript on every Pull Request.
+- **CD:** On `main`, applies Prisma migrations, pushes the Docker image to ECR, and rolls the ECS service when the ECS GitHub variables are configured.
 
 ---
 
@@ -89,7 +89,10 @@ This repository includes a fully automated **GitHub Actions** pipeline (`.github
 | Command | Description |
 |---|---|
 | `npm run dev` | Starts the server in development mode with hot-reloading (nodemon). |
+| `npm run typecheck` | Runs TypeScript checks without writing build output. |
 | `npm run build` | Compiles TypeScript into the `/dist` directory. |
 | `npm start` | Runs the compiled JavaScript in production mode. |
-| `npm run db:push` | Pushes the Prisma schema to the database (use for dev only). |
+| `npm run db:migrate:dev` | Creates and applies a local Prisma migration while developing. |
+| `npm run db:migrate:deploy` | Applies committed Prisma migrations in production/CI. |
+| `npm run db:push:dev` | Pushes schema directly for throwaway local prototyping only. |
 | `npm run db:seed` | Runs the seeder to populate the DB with Super Admins & Settings. |

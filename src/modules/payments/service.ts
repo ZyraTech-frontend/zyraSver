@@ -186,8 +186,9 @@ export class PaymentsService {
   // ─── Webhook Processor ────────────────────────────────────────
   static async processWebhook(
     signature: string,
-    rawBody: string
+    rawBody: Buffer | string
   ): Promise<void> {
+    const eventPayload = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
     const hash = crypto
       .createHmac('sha512', await this.getPaystackSecretKey())
       .update(rawBody)
@@ -197,7 +198,7 @@ export class PaymentsService {
       throw new PaymentError(401, 'Invalid webhook signature', 'UNAUTHORIZED');
     }
 
-    const event = JSON.parse(rawBody) as WebhookEvent;
+    const event = JSON.parse(eventPayload) as WebhookEvent;
 
     if (event.event === 'charge.success') {
       const { reference, channel, paid_at } = event.data;

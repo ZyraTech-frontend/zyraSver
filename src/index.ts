@@ -16,7 +16,11 @@ dotenv.config();
 
 // Initialize Express
 const app: Express = express();
-const PORT = process.env.API_PORT || 5000;
+// Azure uses WEBSITES_PORT, fallback to API_PORT (dev), then PORT, then 8080
+const PORT = process.env.WEBSITES_PORT || process.env.API_PORT || process.env.PORT || 8080;
+
+// ECS/ALB and Azure load balancers forward the original client IP in proxy headers.
+app.set('trust proxy', 1);
 
 // ============================================
 // SECURITY HEADERS (Helmet)
@@ -53,7 +57,15 @@ app.use(cors({
 // ============================================
 // BODY PARSER
 // ============================================
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, _res, buf) => {
+    const expressReq = req as Request & { rawBody?: Buffer };
+    if (expressReq.originalUrl === '/api/payments/webhook') {
+      expressReq.rawBody = Buffer.from(buf);
+    }
+  },
+}));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // ============================================
@@ -103,8 +115,9 @@ async function start() {
   try {
     await testDatabaseConnection();
 
-    app.listen(PORT, () => {
-      console.log(`✓ Server running on http://localhost:${PORT}`);
+    // Bind to 0.0.0.0 to accept external traffic in containerized environments (Docker, Azure)
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✓ Server running on 0.0.0.0:${PORT}`);
       console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`✓ API Base: /api`);
       console.log(`✓ Health Check: http://localhost:${PORT}/health`);
@@ -119,11 +132,14 @@ async function start() {
 start();
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('\nShutting down gracefully...');
+async function shutdown(signal: string) {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
   await disconnectDatabase();
   process.exit(0);
-});
+}
+
+process.on('SIGINT', () => void shutdown('SIGINT'));
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
 export { prisma };
 export default app;
