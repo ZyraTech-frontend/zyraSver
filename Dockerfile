@@ -63,12 +63,12 @@ RUN chown -R zyratech:zyratech /app
 # Switch to non-root user
 USER zyratech
 
-# Expose port
-EXPOSE 5000
+# Expose port (Azure App Service uses WEBSITES_PORT=8080 by default)
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://localhost:5000/health').then((r)=>process.exit(r.ok ? 0 : 1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://localhost:8080/health').then((r)=>process.exit(r.ok ? 0 : 1)).catch(()=>process.exit(1))"
 
 # Start the application
 # Prisma migrations are handled outside the long-running API task.

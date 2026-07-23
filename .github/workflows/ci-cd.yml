@@ -9,13 +9,11 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 env:
   NODE_VERSION: "20"
-  AWS_REGION: "us-east-2" # Set exactly to your region
-  ECR_REPOSITORY: "zyratech-backend"
-  IMAGE_TAG: ${{ github.sha }}
+  REGISTRY_URL: "docker.io"  # Docker Hub for free tier
+  IMAGE_NAME: "zyratech-backend"
 
 jobs:
   build:
@@ -45,7 +43,7 @@ jobs:
         run: npm run build
 
   deploy:
-    name: Deploy to ECS Express
+    name: Deploy to Azure App Service
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -63,41 +61,38 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 1. Apply database migrations safely over direct port 5432
+      # 1. Apply database migrations safely via Supabase DIRECT_URL
       - name: Run Prisma Migration Deploy
         run: npx prisma migrate resolve --applied 20260707000000_initial_schema || npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
-      # 2. Authenticate securely with AWS via OIDC role assignment
-      - name: Configure AWS credentials
-        id: aws-creds
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
 
-      # 3. Log into ECR and build container image
-      - name: Login to Amazon ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build and push image
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+      # 2. Build Docker image locally
+      - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY --all-tags
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build --platform linux/amd64 \
+            -t ${{ env.REGISTRY_URL }}/${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -t ${{ env.REGISTRY_URL }}/${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest \
+            .
 
-      # 4. Trigger seamless ECS Express Mode Delivery
-      - name: Deploy to Amazon ECS Express Service
-        uses: aws-actions/amazon-ecs-deploy-express-service@v1
+      # 3. Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          cluster: default
-          service-name: zyratech-backend-service
-          image: ${{ steps.build-image.outputs.image }}
-          execution-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsTaskExecutionRole
-          task-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsTaskExecutionRole
-          infrastructure-role-arn: arn:aws:iam::${{ steps.aws-creds.outputs.aws-account-id }}:role/ecsInfrastructureRoleForExpressServices
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      # 4. Push image to Docker Hub
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ env.REGISTRY_URL }}/${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY_URL }}/${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
+      # 5. Deploy to Azure App Service
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          images: ${{ env.REGISTRY_URL }}/${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
