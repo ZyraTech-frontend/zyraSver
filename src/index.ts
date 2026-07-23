@@ -16,9 +16,10 @@ dotenv.config();
 
 // Initialize Express
 const app: Express = express();
-const PORT = process.env.API_PORT || 5000;
+// Azure uses WEBSITES_PORT, fallback to API_PORT (dev), then PORT, then 8080
+const PORT = process.env.WEBSITES_PORT || process.env.API_PORT || process.env.PORT || 8080;
 
-// ECS/ALB terminates TLS and forwards the original client IP in proxy headers.
+// ECS/ALB and Azure load balancers forward the original client IP in proxy headers.
 app.set('trust proxy', 1);
 
 // ============================================
@@ -114,8 +115,9 @@ async function start() {
   try {
     await testDatabaseConnection();
 
-    app.listen(PORT, () => {
-      console.log(`✓ Server running on http://localhost:${PORT}`);
+    // Bind to 0.0.0.0 to accept external traffic in containerized environments (Docker, Azure)
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✓ Server running on 0.0.0.0:${PORT}`);
       console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`✓ API Base: /api`);
       console.log(`✓ Health Check: http://localhost:${PORT}/health`);
