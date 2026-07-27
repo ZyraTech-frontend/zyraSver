@@ -4,7 +4,7 @@
 # ══════════════════════════════════════════════════════════════
 
 # ── Stage 1: Build ────────────────────────────────────────────
-FROM node:20 AS builder
+FROM node:24 AS builder
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ COPY src ./src/
 RUN npm run build
 
 # ── Stage 2: Production ──────────────────────────────────────
-FROM node:20 AS production
+FROM node:24 AS production
 
 WORKDIR /app
 
