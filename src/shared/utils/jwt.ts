@@ -8,7 +8,16 @@ export interface TokenPayload {
 }
 
 export class JwtService {
-  private static readonly SECRET = process.env.JWT_SECRET || 'your-secret-key';
+  private static readonly SECRET = (() => {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('CRITICAL: JWT_SECRET environment variable is required. Application cannot start without it.');
+    }
+    if (process.env.JWT_SECRET.length < 32) {
+      throw new Error('CRITICAL: JWT_SECRET must be at least 32 characters long for security.');
+    }
+    return process.env.JWT_SECRET;
+  })();
+  
   private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || `${JwtService.SECRET}-refresh`;
   private static readonly ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '900'; // 15 min
   private static readonly REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '604800'; // 7 days

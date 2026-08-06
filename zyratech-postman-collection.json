@@ -1,21 +1,27 @@
 {
   "info": {
-    "name": "ZyraTech Hub API - Production",
-    "description": "Complete API documentation for ZyraTech Hub STEM Education Platform. Base URL: http://3.16.26.212:5000/api — 19 modules, 100+ endpoints. To get started: run the Login request, copy the token from the response, and paste it into the admin_token collection variable.",
+    "name": "ZyraTech Hub API - Production (Azure)",
+    "description": "Complete API documentation for ZyraTech Hub STEM Education Platform. Base URL: https://api.zyratechhub.com/api — 19 modules, 100+ endpoints. To get started: run the Login request, and the token will auto-save to access_token variable.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "base_url",
-      "value": "http://3.16.26.212:5000/api",
+      "value": "https://api.zyratechhub.com/api",
       "type": "string",
-      "description": "Production API base URL"
+      "description": "Production API base URL on Azure with custom domain"
     },
     {
       "key": "admin_token",
       "value": "",
       "type": "string",
-      "description": "JWT Admin Token (Set this after logging in)"
+      "description": "JWT Access Token (Auto-saved after login)"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Access Token (Auto-saved after login) - Alternative name"
     }
   ],
   "item": [
@@ -25,6 +31,24 @@
       "item": [
         {
           "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.token) {",
+                  "        pm.collectionVariables.set('access_token', response.data.token);",
+                  "        pm.collectionVariables.set('admin_token', response.data.token);",
+                  "        console.log('✅ Access token auto-saved!');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -43,10 +67,10 @@
                 "login"
               ]
             },
-            "description": "Authenticates an admin. Returns token + user, OR returns requires2FA + tempToken if 2FA is enabled.",
+            "description": "Authenticates an admin. Returns token + user. Token is auto-saved to collection variables.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Zyratech247\"\n}"
+              "raw": "{\n  \"email\": \"afedi@zyratech.com\",\n  \"password\": \"TempPassword123!\"\n}"
             }
           }
         },
